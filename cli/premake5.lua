@@ -22,11 +22,11 @@ project "SupercellCompressionCLI"
     }
 
 	filter "configurations:Debug"
-		defines "SC_DEBUG"
+		defines "DEBUG"
 		runtime "Debug"
 		symbols "on"
     
     filter "configurations:Release"
-        defines "SC_RELEASE"
+        defines "NDEBUG"
         runtime "Release"
         optimize "on"

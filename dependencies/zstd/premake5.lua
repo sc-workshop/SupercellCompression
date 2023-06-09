@@ -1,29 +1,27 @@
-
 project "Zstandard"
-    kind "StaticLib"
+kind "StaticLib"
 
-    language "C"
+language "C"
 
-    targetdir "%{wks.location}/build/bin/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
-    objdir "%{wks.location}/build/obj/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
+targetdir "%{wks.location}/build/bin/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
+objdir "%{wks.location}/build/obj/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
 
-    files {
-		"src/**.c"
-    }
+files {"src/**.c"}
 
-    includedirs {
-        "include",
-		"include/common",
-		"include/compress",
-		"include/decompress"
-	}
+includedirs {"include", "include/common", "include/compress", "include/decompress"}
 
+defines {"ZSTD_DISABLE_ASM", "ZSTD_MULTITHREAD"}
 
-    filter "configurations:Debug"
-        runtime "Debug"
-        symbols "on"
-    
-    filter "configurations:Release"
-        runtime "Release"
-        optimize "on"
+filter {"system:windows"}
+defines {"__USE_MINGW_ANSI_STDIO"}
+
+filter "configurations:Debug"
+defines {"DEBUG"}
+runtime "Debug"
+symbols "on"
+
+filter "configurations:Release"
+defines {"NDEBUG"}
+runtime "Release"
+optimize "on"
 

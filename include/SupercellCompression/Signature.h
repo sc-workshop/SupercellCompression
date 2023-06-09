@@ -4,7 +4,7 @@ namespace sc
 {
 	enum class CompressionSignature : uint32_t
 	{
-#ifdef SC_DEBUG
+#ifdef DEBUG
 		NONE = 0,
 #endif // DEBUG
 

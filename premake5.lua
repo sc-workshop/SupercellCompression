@@ -38,7 +38,7 @@ project "SupercellCompression"
         runtime "Debug"
 
         defines {
-            "SC_DEBUG"
+            "DEBUG"
         }
 
         symbols "on"
@@ -47,7 +47,7 @@ project "SupercellCompression"
         runtime "Release"
 
         defines {
-            "SC_RELEASE"
+            "NDEBUG"
         }
 
         optimize "on"
