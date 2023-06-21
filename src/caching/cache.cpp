@@ -10,9 +10,9 @@
 namespace sc {
 	fs::path SwfCache::getInfoFilePath(const fs::path& filepath)
 	{
-		fs::path path(filepath);
+		fs::path basename = filepath.stem();
 
-		return path.replace_extension("info");
+		return getTempDirectory() / basename.concat(".info");
 	}
 
 	// Path to swf TEMP folder
