@@ -3,10 +3,10 @@
 #include <string>
 
 #include "SupercellCompression/Signature.h"
-#include "SupercellBytestream/base/Bytestream.h"
+#include "SupercellBytestream.h"
 
 #include <filesystem>
-namespace fs = filesystem;
+namespace fs = std::filesystem;
 
 using namespace std;
 

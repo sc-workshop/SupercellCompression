@@ -4,9 +4,9 @@
 #include "backend/ZstdCompression.h"
 #include "backend/LzhamCompression.h"
 
+#include "SupercellBytestream.h"
+
 #include "caching/md5.h"
-#include "SupercellBytestream/error/StreamException.h"
-#include "SupercellBytestream/FileStream.h"
 
 #include <filesystem>
 

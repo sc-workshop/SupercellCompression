@@ -3,13 +3,10 @@
 #include <iostream>
 
 #include "caching/cache.h"
-#include "SupercellCompression/error/DecompressException.h"
 
 #include "backend/LzmaCompression.h"
 #include "backend/LzhamCompression.h"
 #include "backend/ZstdCompression.h"
-
-#include <SupercellBytestream/FileStream.h>
 
 namespace sc
 {
@@ -100,7 +97,7 @@ namespace sc
 			signature = CompressionSignature::NONE;
 			return false;
 #else
-			throw DecompressException("Compressed file has wrong magic number");
+			throw std::exception("Compressed file has wrong magic number");
 #endif
 		}
 
