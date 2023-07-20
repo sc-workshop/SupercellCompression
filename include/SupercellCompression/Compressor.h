@@ -8,28 +8,49 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-using namespace std;
+#include <thread>
 
 namespace sc
 {
-	class Compressor
+	struct CompressorContext
 	{
-	public:
-		static uint16_t theardsCount;
+		uint32_t threadCount = std::thread::hardware_concurrency() <= 0 ? 1 : std::thread::hardware_concurrency();
 
+		CompressionSignature signature = CompressionSignature::ZSTD;
+
+		std::vector<uint8_t> metadata;
+	};
+
+	enum class CompressorResult
+	{
+		COMPRESSION_SUCCES,
+
+		ALLOC_ERROR,
+
+		LZHAM_STREAM_INIT_ERROR,
+		LZHAM_CORRUPTED_DATA_ERROR,
+
+		LZMA_STREAM_INIT_ERROR,
+
+		ZSTD_STREAM_INIT_ERROR,
+		ZSTD_CORRUPTED_DATA_ERROR
+	};
+
+	namespace Compressor
+	{
 		/*
 		* Compress .sc file.
 		*/
-		static void compress(const fs::path& inputFilepath, const fs::path& outFilepath, CompressionSignature signature, vector<uint8_t> metadata = {});
+		CompressorResult Compress(const fs::path& inputFilepath, const fs::path& outFilepath, CompressorContext context);
 
 		/*
 		* Compress .sc file data from stream.
 		*/
-		static void compress(Bytestream& inStream, Bytestream& outStream, CompressionSignature signature, vector<uint8_t> metadata = {});
+		CompressorResult Compress(Bytestream& inStream, Bytestream& outStream, CompressorContext context);
 
 		/*
 		* Compress common file data.
 		*/
-		static void commonCompress(Bytestream& inStream, Bytestream& outStream, CompressionSignature signature);
-	};
+		CompressorResult CommonCompress(Bytestream& inStream, Bytestream& outStream, CompressorContext context);
+	}
 }

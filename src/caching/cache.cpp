@@ -8,15 +8,15 @@
 #define CACHE_FOLDER "swf_cache"
 
 namespace sc {
-	fs::path SwfCache::getInfoFilePath(const fs::path& filepath)
+	fs::path SwfCache::GetInfoFilePath(const fs::path& filepath)
 	{
 		fs::path basename = filepath.stem();
 
-		return getTempDirectory() / basename.concat(".info");
+		return GetTempDirectory() / basename.concat(".info");
 	}
 
 	// Path to swf TEMP folder
-	fs::path SwfCache::getTempDirectory()
+	fs::path SwfCache::GetTempDirectory()
 	{
 		fs::path path = fs::temp_directory_path();
 		path /= fs::path(CACHE_FOLDER);
@@ -31,18 +31,18 @@ namespace sc {
 	}
 
 	// Path to swf TEMP folder with filename
-	fs::path SwfCache::getTempDirectory(const fs::path& filepath)
+	fs::path SwfCache::GetTempDirectory(const fs::path& filepath)
 	{
-		return SwfCache::getTempDirectory() / filepath.filename();
+		return SwfCache::GetTempDirectory() / filepath.filename();
 	}
 
 	// Check if file exists in swf TEMP folder
-	bool SwfCache::isFileCached(const fs::path& filepath, std::vector<uint8_t> hash, uint32_t size)
+	bool SwfCache::IsFileCached(const fs::path& filepath, std::vector<uint8_t> hash, uint32_t size)
 	{
-		fs::path tempDir = getTempDirectory();
+		fs::path tempDir = GetTempDirectory();
 
 		fs::path assetPath = tempDir / filepath.filename();
-		fs::path infoPath = getInfoFilePath(assetPath);
+		fs::path infoPath = GetInfoFilePath(assetPath);
 
 		if (!fs::exists(assetPath) || !fs::exists(infoPath))
 		{
@@ -51,7 +51,7 @@ namespace sc {
 
 		uint32_t cachedSize = 0;
 		std::vector<uint8_t> cachedHash;
-		readCacheInfo(filepath, cachedHash, cachedSize);
+		ReadCacheInfo(filepath, cachedHash, cachedSize);
 
 		if (cachedSize != size || cachedHash != hash)
 			return false;
@@ -60,9 +60,9 @@ namespace sc {
 	}
 
 	// Gets data from info file in swf TEMP folder
-	void SwfCache::readCacheInfo(const fs::path& filepath, std::vector<uint8_t>& hash, uint32_t& size)
+	void SwfCache::ReadCacheInfo(const fs::path& filepath, std::vector<uint8_t>& hash, uint32_t& size)
 	{
-		const fs::path cacheInfoPath = getInfoFilePath(filepath);
+		const fs::path cacheInfoPath = GetInfoFilePath(filepath);
 		ReadFileStream file(cacheInfoPath);
 
 		uint8_t byte;
@@ -81,9 +81,9 @@ namespace sc {
 		file.close();
 	}
 
-	void SwfCache::writeCacheInfo(const fs::path& filepath, std::vector<uint8_t> hash, uint32_t fileSize)
+	void SwfCache::WriteCacheInfo(const fs::path& filepath, std::vector<uint8_t> hash, uint32_t fileSize)
 	{
-		fs::path infoFilePath = getInfoFilePath(filepath);
+		fs::path infoFilePath = GetInfoFilePath(filepath);
 
 		WriteFileStream file(infoFilePath);
 		file.write(hash.data(), hash.size());

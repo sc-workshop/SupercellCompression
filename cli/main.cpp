@@ -10,6 +10,8 @@
 
 namespace fs = std::filesystem;
 
+using namespace std::chrono;
+
 #if defined _WIN32
 #define PLATFORM "Windows"
 #elif defined __linux
@@ -20,7 +22,7 @@ namespace fs = std::filesystem;
 #define PLATFORM "Unknown"
 #endif
 
-std::string getCmdOption(int argc, char* argv[], const std::string& option)
+std::string GetOption(int argc, char* argv[], const std::string& option)
 {
 	std::string cmd;
 	for (int i = 0; i < argc; ++i)
@@ -36,7 +38,7 @@ std::string getCmdOption(int argc, char* argv[], const std::string& option)
 	return cmd;
 }
 
-bool optionInCmd(int argc, char* argv[], const std::string& option) {
+bool OptionIn(int argc, char* argv[], const std::string& option) {
 	for (int i = 0; i < argc; ++i)
 	{
 		std::string arg = argv[i];
@@ -46,6 +48,84 @@ bool optionInCmd(int argc, char* argv[], const std::string& option) {
 		}
 	}
 	return false;
+}
+
+void PrintResult(sc::CompressorResult result) {
+	if (result == sc::CompressorResult::COMPRESSION_SUCCES) {
+		std::cout << "[INFO] Succes!" << std::endl;
+		return;
+	}
+
+	std::cout << "[ERROR] ";
+
+	switch (result)
+	{
+	case sc::CompressorResult::ALLOC_ERROR:
+		std::cout << "Failed to allocate memory for compress" << std::endl;
+		break;
+	case sc::CompressorResult::LZHAM_STREAM_INIT_ERROR:
+		std::cout << "Failed to initialize LZHAM stream" << std::endl;
+		break;
+	case sc::CompressorResult::LZHAM_CORRUPTED_DATA_ERROR:
+		std::cout << "Failed to compress corrupted LZHAM data" << std::endl;
+		break;
+	case sc::CompressorResult::LZMA_STREAM_INIT_ERROR:
+		std::cout << "Failed to initialize LZMA stream" << std::endl;
+		break;
+	case sc::CompressorResult::ZSTD_STREAM_INIT_ERROR:
+		std::cout << "Failed to initialize ZSTD stream" << std::endl;
+		break;
+	case sc::CompressorResult::ZSTD_CORRUPTED_DATA_ERROR:
+		std::cout << "Failed to compress corrupted ZSTD data" << std::endl;
+		break;
+	default:
+		break;
+	}
+}
+
+void PrintResult(sc::DecompressorResult result) {
+	if (result == sc::DecompressorResult::DECOMPRESSION_SUCCES) {
+		std::cout << "[INFO] Succes!" << std::endl;
+		return;
+	}
+
+	std::cout << "[ERROR] ";
+
+	switch (result)
+	{
+	case sc::DecompressorResult::ALLOC_ERROR:
+		std::cout << "Failed to allocate memory for decompress" << std::endl;
+		break;
+	case sc::DecompressorResult::CORRUPTED_HEADER_ERROR:
+		std::cout << "File has corrupted header" << std::endl;
+		break;
+	case sc::DecompressorResult::STREAM_ERROR:
+		std::cout << "Failed to get data from stream" << std::endl;
+		break;
+	case sc::DecompressorResult::LZHAM_CORRUPTED_DICT_SIZE_ERROR:
+		std::cout << "LZHAM data has bad dictionary size" << std::endl;
+		break;
+	case sc::DecompressorResult::LZHAM_STREAM_INIT_ERROR:
+		std::cout << "Failed to initialize LZMA decompress stream" << std::endl;
+		break;
+	case sc::DecompressorResult::LZHAM_CORRUPTED_DATA_ERROR:
+		std::cout << "LZHAM data is corrupted" << std::endl;
+		break;
+	case sc::DecompressorResult::LZMA_CORRUPTED_DATA_ERROR:
+		std::cout << "LZMA data is corrupted" << std::endl;
+		break;
+	case sc::DecompressorResult::LZMA_MISSING_END_MARKER_ERROR:
+		std::cout << "LZMA data does not have an end marker" << std::endl;
+		break;
+	case sc::DecompressorResult::ZSTD_CORRUPTED_DATA_ERROR:
+		std::cout << "ZSTD data is corrupted" << std::endl;
+		break;
+	case sc::DecompressorResult::ZSTD_STREAM_INIT_ERROR:
+		std::cout << "Failed to initialize ZSTD decompress stream" << std::endl;
+		break;
+	default:
+		break;
+	}
 }
 
 void printUsage() {
@@ -60,8 +140,8 @@ void printUsage() {
 	printf("\n");
 
 	printf("Options:\n");
-	printf("-m - Compression mode: LZMA, LZHAM, ZSTD. Default: LZMA\n");
-	printf("-t - Theard count. Default: All CPU cores\n");
+	printf("-m - Compression mode: LZMA, LZHAM, ZSTD. Default: ZSTD\n");
+	printf("-t - Thread count. Default: All CPU cores\n");
 
 	printf("\n");
 
@@ -73,20 +153,29 @@ void printUsage() {
 	printf("Example: c file.sc file_compressed.sc -m=ZSTD -t=2\n");
 }
 
+void PrintTime(time_point<high_resolution_clock> start, time_point<high_resolution_clock> end) {
+	milliseconds msTime = duration_cast<milliseconds>(end - start);
+	if (msTime.count() < 1000) {
+		std::cout << msTime.count() << " miliseconds";
+	}
+	else {
+		seconds secTime = duration_cast<seconds>(msTime);
+
+		std::cout << secTime.count() << " seconds, ";
+
+		std::cout << (msTime - duration_cast<milliseconds>(secTime)).count() << " miliseconds" << std::endl;
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	printf("SC Compression - %s Command Line app - Compiled %s %s\n\n", PLATFORM, __DATE__, __TIME__);
 	if (argc <= 1) {
 		printUsage();
-		std::cout << std::endl;
+		return 0;
 	}
 
 	// Files
-
-	if (!argv[1]) {
-		std::cout << "[ERROR] Mode is not specified." << std::endl;
-		return 0;
-	}
 	std::string mode(argv[1]);
 
 	fs::path inFilepath(argv[2] ? argv[2] : "");
@@ -102,71 +191,67 @@ int main(int argc, char* argv[])
 	}
 
 	// Flags
-
-	bool isCommon = optionInCmd(argc, argv, "--common");
+	bool isCommon = OptionIn(argc, argv, "--common");
 
 	// Timer
-
-	using std::chrono::high_resolution_clock;
-	using std::chrono::duration_cast;
-	using std::chrono::duration;
-	using std::chrono::milliseconds;
-	using std::chrono::seconds;
-
-	std::chrono::time_point startTime = high_resolution_clock::now();
+	time_point startTime = high_resolution_clock::now();
 
 	// Modes
-
 	if (mode == "d") {
 		sc::ReadFileStream inStream(inFilepath);
 		sc::WriteFileStream outStream(outFilepath);
 
 		try {
 			if (isCommon) {
-				sc::Decompressor::commonDecompress(inStream, outStream);
+				sc::Decompressor::CommonDecompress(inStream, outStream);
 			}
 			else {
-				sc::Decompressor::decompress(inStream, outStream);
+				sc::Decompressor::Decompress(inStream, outStream);
 			}
 		}
 		catch (const std::exception& err) {
-			std::cout << "[ERROR] " << err.what() << endl;
+			std::cout << "[ERROR] " << err.what() << std::endl;
 		}
 
 		inStream.close();
 		outStream.close();
 	}
 	else if (mode == "c") {
-		sc::CompressionSignature signature = sc::CompressionSignature::LZMA;
+		sc::CompressorContext context;
 
-		std::string signatureArg = getCmdOption(argc, argv, "-m=");
-		std::string theardArg = getCmdOption(argc, argv, "-t=");
+		std::string signatureArg = GetOption(argc, argv, "-m=");
+		std::string theardArg = GetOption(argc, argv, "-t=");
 
-		if (signatureArg == "ZSTD") {
-			signature = sc::CompressionSignature::ZSTD;
+		if (signatureArg == "ZSTD")
+		{
+			context.signature = sc::CompressionSignature::ZSTD;
 		}
-		else if (signatureArg == "LZHAM") {
-			signature = sc::CompressionSignature::LZHAM;
+		else if (signatureArg == "LZMA")
+		{
+			context.signature = sc::CompressionSignature::LZMA;
+		}
+		else if (signatureArg == "LZHAM")
+		{
+			context.signature = sc::CompressionSignature::LZHAM;
+		}
+
+		if (theardArg.size() > 0) {
+			context.threadCount = std::stoi(theardArg);
 		}
 
 		sc::ReadFileStream inStream(inFilepath);
 		sc::WriteFileStream outStream(outFilepath);
 
-		if (theardArg.size() > 0) {
-			sc::Compressor::theardsCount = std::stoi(theardArg);
+		sc::CompressorResult result;
+
+		if (isCommon) {
+			result = sc::Compressor::CommonCompress(inStream, outStream, context);
+		}
+		else {
+			result = sc::Compressor::Compress(inStream, outStream, context);
 		}
 
-		try {
-			if (isCommon) {
-				sc::Compressor::commonCompress(inStream, outStream, signature);
-			}
-			else {
-				sc::Compressor::compress(inStream, outStream, signature);
-			}
-		}
-		catch (const std::exception& err) {
-			std::cout << "[ERROR] " << err.what() << endl;
-		}
+		PrintResult(result);
 	}
 	else {
 		printf("[ERROR] Unknown mode.");
@@ -175,17 +260,10 @@ int main(int argc, char* argv[])
 
 	// Result
 
-	std::chrono::time_point endTime = high_resolution_clock::now();
+	time_point endTime = high_resolution_clock::now();
 	std::cout << "[INFO] Operation took: ";
 
-	milliseconds msTime = duration_cast<milliseconds>(endTime - startTime);
-	if (msTime.count() < 1000) {
-		std::cout << msTime.count() << " miliseconds.";
-	}
-	else {
-		seconds secTime = duration_cast<seconds>(msTime);
-		std::cout << secTime.count() << " seconds." << std::endl;
-	}
+	PrintTime(startTime, endTime);
 
 	return 0;
 }

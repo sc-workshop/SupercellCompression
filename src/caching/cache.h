@@ -10,12 +10,12 @@ namespace sc {
 	class SwfCache
 	{
 	public:
-		static fs::path getInfoFilePath(const fs::path & filepath);
-		static fs::path getTempDirectory();
-		static fs::path getTempDirectory(const fs::path& filepath);
+		static fs::path GetInfoFilePath(const fs::path& filepath);
+		static fs::path GetTempDirectory();
+		static fs::path GetTempDirectory(const fs::path& filepath);
 
-		static bool isFileCached(const fs::path & filepath, std::vector<uint8_t> id, uint32_t fileSize);
-		static void readCacheInfo(const fs::path & filepath, std::vector<uint8_t>& sign, uint32_t& fileSize);
-		static void writeCacheInfo(const fs::path & filepath, std::vector<uint8_t> hash, uint32_t fileSize);
+		static bool IsFileCached(const fs::path& filepath, std::vector<uint8_t> id, uint32_t fileSize);
+		static void ReadCacheInfo(const fs::path& filepath, std::vector<uint8_t>& hash, uint32_t& fileSize);
+		static void WriteCacheInfo(const fs::path& filepath, std::vector<uint8_t> hash, uint32_t fileSize);
 	};
 }

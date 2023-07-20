@@ -1,13 +1,14 @@
 #pragma once
 
 #include <SupercellBytestream/base/BytestreamBase.h>
+#include "SupercellCompression/Compressor.h"
+#include "SupercellCompression/Decompressor.h"
 
 namespace sc
 {
-	class LZHAM
+	namespace LZHAM
 	{
-	public:
-		static void compress(BytestreamBase& inStream, BytestreamBase& outStream, int16_t theards);
-		static void decompress(BytestreamBase& inStream, BytestreamBase& outStream);
-	};
+		CompressorResult Compress(BytestreamBase& input, BytestreamBase& output, uint32_t theards);
+		DecompressorResult Decompress(BytestreamBase& input, BytestreamBase& output);
+	}
 }

@@ -40,8 +40,8 @@ project "SupercellCompression"
         defines {
             "DEBUG"
         }
-
         symbols "on"
+        optimize "off"
     
     filter "configurations:Release"
         runtime "Release"
@@ -49,5 +49,5 @@ project "SupercellCompression"
         defines {
             "NDEBUG"
         }
-
+        symbols "off"
         optimize "on"

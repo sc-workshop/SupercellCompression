@@ -17,9 +17,19 @@ project "LZMA"
 
     filter "configurations:Debug"
         runtime "Debug"
+
+        defines {
+            "DEBUG"
+        }
         symbols "on"
+        optimize "off"
     
     filter "configurations:Release"
         runtime "Release"
+
+        defines {
+            "NDEBUG"
+        }
+        symbols "off"
         optimize "on"
 

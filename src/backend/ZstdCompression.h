@@ -1,11 +1,13 @@
 #pragma once
 
 #include "SupercellBytestream/base/BytestreamBase.h"
+#include "SupercellCompression/Compressor.h"
+#include "SupercellCompression/Decompressor.h"
 
 namespace sc {
-	class ZSTD {
-	public:
-		static void decompress(BytestreamBase& inStream, BytestreamBase& outStream);
-		static void compress(BytestreamBase& inStream, BytestreamBase& outStream, int16_t theards);
-	};
+	namespace ZSTD
+	{
+		DecompressorResult Decompress(BytestreamBase& input, BytestreamBase& output);
+		CompressorResult Compress(BytestreamBase& input, BytestreamBase& output, uint32_t threads);
+	}
 }

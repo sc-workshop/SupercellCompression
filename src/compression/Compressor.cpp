@@ -8,99 +8,90 @@
 
 #include "caching/md5.h"
 
-#include <filesystem>
-
-#ifdef SC_MULTITHEARD
-#include <thread>
-const uint32_t theards = std::thread::hardware_concurrency();
-#else
-const uint32_t theards = 1;
-#endif // SC_MULTITHEARD
-
-namespace fs = std::filesystem;
-
 namespace sc
 {
-	uint16_t Compressor::theardsCount = theards;
-
-	void Compressor::compress(const fs::path& input, const fs::path& output, CompressionSignature signature, vector<uint8_t> metadata)
+	namespace Compressor
 	{
-		ReadFileStream inputStream(input);
-		WriteFileStream outputStream(output);
-
-		compress(inputStream, outputStream, signature, metadata);
-
-		inputStream.close();
-		outputStream.close();
-	}
-
-	void Compressor::compress(Bytestream& input, Bytestream& output, CompressionSignature signature, vector<uint8_t> metadata)
-	{
-		output.writeUInt16BE(0x5343);
-		if (metadata.size() != 0)
+		CompressorResult Compress(const fs::path& input, const fs::path& output, CompressorContext context)
 		{
-			output.writeUInt32BE(4);
+			ReadFileStream inputStream(input);
+			WriteFileStream outputStream(output);
+
+			CompressorResult result = Compress(inputStream, outputStream, context);
+
+			inputStream.close();
+			outputStream.close();
+
+			return result;
 		}
 
-		switch (signature)
+		CompressorResult Compress(Bytestream& input, Bytestream& output, CompressorContext context)
 		{
-		case sc::CompressionSignature::LZMA:
-		case sc::CompressionSignature::LZHAM:
-			output.writeUInt32BE(1);
-			break;
-		case sc::CompressionSignature::ZSTD:
-			output.writeUInt32BE(3);
-			break;
-		default:
-			commonCompress(input, output, signature);
-			return;
+			output.writeUInt16BE(0x5343);
+
+			if (!context.metadata.empty())
+			{
+				output.writeUInt32BE(4);
+			}
+
+			switch (context.signature)
+			{
+			case sc::CompressionSignature::LZMA:
+			case sc::CompressionSignature::LZHAM:
+				output.writeUInt32BE(1);
+				break;
+			case sc::CompressionSignature::ZSTD:
+				output.writeUInt32BE(3);
+				break;
+			default:
+				break;
+			}
+
+			md5 hashCtx;
+			uint8_t hash[16];
+
+			uint8_t* buffer = new uint8_t[input.size()]();
+			input.seek(0);
+			input.read(buffer, input.size());
+			input.seek(0);
+
+			hashCtx.update(buffer, input.size());
+			hashCtx.final(hash);
+
+			output.writeUInt32BE(16);
+			output.write(&hash, 16);
+
+			CompressorResult result = CommonCompress(input, output, context);
+
+			if (!context.metadata.empty())
+			{
+				output.write("START", 6);
+				output.write(context.metadata.data(), context.metadata.size());
+			}
+
+			return result;
 		}
 
-		md5 hashCtx;
-		uint8_t hash[16];
-
-		uint8_t* buffer = new uint8_t[input.size()]();
-		input.seek(0);
-		input.read(buffer, input.size());
-		input.seek(0);
-
-		hashCtx.update(buffer, input.size());
-		hashCtx.final(hash);
-
-		output.writeUInt32BE(16);
-		output.write(&hash, 16);
-
-		commonCompress(input, output, signature);
-
-		if (metadata.size() != 0) {
-			std::string start = "START";
-			output.write((void*)start.c_str(), start.size());
-			output.write(metadata.data(), metadata.size());
-		}
-	}
-
-	void Compressor::commonCompress(Bytestream& inStream, Bytestream& outStream, CompressionSignature signature)
-	{
-		inStream.seek(0);
-		switch (signature)
+		CompressorResult CommonCompress(Bytestream& input, Bytestream& output, CompressorContext context)
 		{
-		case CompressionSignature::LZMA:
-			LZMA::compress(inStream, outStream, theardsCount);
-			break;
+			switch (context.signature)
+			{
+			case CompressionSignature::LZMA:
+				return LZMA::Compress(input, output, context.threadCount);
 
-		case CompressionSignature::LZHAM:
-			LZHAM::compress(inStream, outStream, theardsCount);
-			break;
+			case CompressionSignature::LZHAM:
+				return LZHAM::Compress(input, output, context.threadCount);
 
-		case CompressionSignature::ZSTD:
-			ZSTD::compress(inStream, outStream, theardsCount);
-			break;
+			case CompressionSignature::ZSTD:
+				return ZSTD::Compress(input, output, context.threadCount);
 
-		default:
-			std::vector<uint8_t> dataBuffer(inStream.size());
-			inStream.read(dataBuffer.data(), dataBuffer.size());
-			outStream.write(dataBuffer.data(), dataBuffer.size());
-			break;
+			default:
+				std::vector<uint8_t> dataBuffer(input.size());
+				input.read(dataBuffer.data(), dataBuffer.size());
+				output.write(dataBuffer.data(), dataBuffer.size());
+				return CompressorResult::COMPRESSION_SUCCES;
+				break;
+			}
 		}
 	}
 }

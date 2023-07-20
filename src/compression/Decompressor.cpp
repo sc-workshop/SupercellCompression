@@ -8,76 +8,20 @@
 #include "backend/LzhamCompression.h"
 #include "backend/ZstdCompression.h"
 
-namespace sc
-{
-	bool Decompressor::decompress(const fs::path& filepath, fs::path& outFilepath)
-	{
-		ReadFileStream input(filepath);
-		outFilepath = SwfCache::getTempDirectory(filepath);
-
-		/* Header parsing */
-		CompressionSignature signature;
-		std::vector<uint8_t> hash;
-		bool hasMetadata = getHeader(input, signature, hash);
-
-		bool isCached = SwfCache::isFileCached(filepath, hash, input.size());
-		if (isCached)
-		{
-			return hasMetadata;
-		}
-
-		WriteFileStream output(outFilepath);
-
-		commonDecompress(input, output, signature);
-
-		input.close();
-		output.close();
-
-		if (!isCached)
-		{
-			SwfCache::writeCacheInfo(filepath, hash, input.size());
-		}
-
-		return hasMetadata;
-	}
-
-	bool Decompressor::decompress(Bytestream& input, Bytestream& output) {
-		CompressionSignature signature;
-		std::vector<uint8_t> hash;
-		bool hasMetadata = getHeader(input, signature, hash);
-		commonDecompress(input, output, signature);
-		return hasMetadata;
-	}
-
-	void Decompressor::commonDecompress(Bytestream& input, Bytestream& output) {
-		input.seek(0);
-		uint32_t magic = input.readUInt32();
-		input.read(&magic, sizeof(magic));
-		input.seek(0);
-
-		if (magic == 0x3A676953) {
-			input.skip(64);
-			magic = input.readUInt32();
-		}
-
-		CompressionSignature signature = getSignature(magic);
-
-		return commonDecompress(input, output, signature);
-	}
-
-	void Decompressor::commonDecompress(Bytestream& inStream, Bytestream& outStream, CompressionSignature signature) {
+namespace sc {
+	DecompressorResult CommonDecompress(Bytestream& inStream, Bytestream& outStream, CompressionSignature signature) {
 		switch (signature)
 		{
 		case CompressionSignature::LZMA:
-			LZMA::decompress(inStream, outStream);
+			return LZMA::Decompress(inStream, outStream);
 			break;
 
 		case CompressionSignature::LZHAM:
-			LZHAM::decompress(inStream, outStream);
+			return LZHAM::Decompress(inStream, outStream);
 			break;
 
 		case CompressionSignature::ZSTD:
-			ZSTD::decompress(inStream, outStream);
+			return ZSTD::Decompress(inStream, outStream);
 			break;
 
 		default:
@@ -85,27 +29,24 @@ namespace sc
 			inStream.seek(0);
 			inStream.read(dataBuffer.data(), dataBuffer.size());
 			outStream.write(dataBuffer.data(), dataBuffer.size());
-			break;
+			return DecompressorResult::DECOMPRESSION_SUCCES;
 		}
 	}
 
-	bool Decompressor::getHeader(Bytestream& inStream, CompressionSignature& signature, std::vector<uint8_t>& hash) {
+	DecompressorResult GetHeader(sc::Bytestream& inStream, sc::CompressionSignature& signature, std::vector<uint8_t>& hash) {
 		uint16_t magic = inStream.readUInt16BE();
 
 		if (magic != 0x5343) {
 #ifdef _DEBUG
-			signature = CompressionSignature::NONE;
-			return false;
+			signature = sc::CompressionSignature::NONE;
+			return DecompressorResult::DECOMPRESSION_SUCCES;
 #else
-			throw std::exception("Compressed file has wrong magic number");
+			return DecompressorResult::CORRUPTED_HEADER_ERROR;
 #endif
 		}
 
 		uint32_t version = inStream.readUInt32BE();
-
-		bool hasMetadata = false;
 		if (version == 4) {
-			hasMetadata = true;
 			version = inStream.readUInt32BE();
 		}
 
@@ -136,6 +77,75 @@ namespace sc
 			inStream.seek(inStream.tell() - sizeof(compressMagic));
 		}
 
-		return hasMetadata;
+		return DecompressorResult::DECOMPRESSION_SUCCES;
+	}
+}
+
+namespace sc
+{
+	namespace Decompressor {
+		DecompressorResult Decompress(const fs::path& filepath, fs::path& outFilepath)
+		{
+			ReadFileStream input(filepath);
+			outFilepath = SwfCache::GetTempDirectory(filepath);
+
+			/* Header parsing */
+			CompressionSignature signature;
+			std::vector<uint8_t> hash;
+			DecompressorResult result = GetHeader(input, signature, hash);
+
+			if (result != DecompressorResult::DECOMPRESSION_SUCCES)
+				return result;
+
+			bool isCached = SwfCache::IsFileCached(filepath, hash, input.size());
+			if (isCached)
+			{
+				return DecompressorResult::DECOMPRESSION_SUCCES;
+			}
+
+			WriteFileStream output(outFilepath);
+
+			result = CommonDecompress(input, output, signature);
+
+			input.close();
+			output.close();
+
+			if (!isCached)
+			{
+				SwfCache::WriteCacheInfo(filepath, hash, input.size());
+			}
+
+			return result;
+		}
+
+		DecompressorResult Decompress(Bytestream& input, Bytestream& output)
+		{
+			CompressionSignature signature;
+			std::vector<uint8_t> hash;
+
+			DecompressorResult result = GetHeader(input, signature, hash);
+
+			if (result != DecompressorResult::DECOMPRESSION_SUCCES)
+				return result;
+
+			return CommonDecompress(input, output, signature);
+		}
+
+		DecompressorResult Decompressor::CommonDecompress(Bytestream& input, Bytestream& output)
+		{
+			input.seek(0);
+			uint32_t magic = input.readUInt32();
+			input.read(&magic, sizeof(magic));
+			input.seek(0);
+
+			if (magic == 0x3A676953) {
+				input.skip(64);
+				magic = input.readUInt32();
+			}
+
+			CompressionSignature signature = getSignature(magic);
+
+			return CommonDecompress(input, output, signature);
+		}
 	}
 }

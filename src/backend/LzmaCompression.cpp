@@ -1,7 +1,8 @@
 #include "LzmaCompression.h"
 
-#include "SupercellCompression/error/DecompressException.h"
-#include "SupercellCompression/error/CompressException.h"
+#include <Alloc.h>
+#include <LzmaDec.h>
+#include <LzmaEnc.h>
 
 static const size_t LZMA_DECOMPRESS_BUF_SIZE = 1 << 16;
 static const size_t LZMA_COMPRESS_BUF_SIZE = 1 << 24;
@@ -37,9 +38,8 @@ static size_t LzmaStreamWrite(const ISeqOutStream* p, const void* buf, size_t si
 	return wrap->outStream->write((void*)buf, size);
 }
 
-namespace sc
-{
-	void LZMA::decompressStream(CLzmaDec* state, SizeT unpackedSize, BytestreamBase& inStream, BytestreamBase& outStream)
+namespace sc {
+	DecompressorResult DecompressStream(CLzmaDec* state, SizeT unpackedSize, BytestreamBase& input, BytestreamBase& output)
 	{
 		int hasBound = (unpackedSize != (UInt32)(Int32)-1);
 
@@ -54,7 +54,7 @@ namespace sc
 			if (inPos == inSize)
 			{
 				inSize = LZMA_DECOMPRESS_BUF_SIZE;
-				inStream.read(&inBuffer, inSize);
+				input.read(&inBuffer, inSize);
 				inPos = 0;
 			}
 			{
@@ -75,92 +75,98 @@ namespace sc
 				outPos += outProcessed;
 				unpackedSize -= outProcessed;
 
-				if (outStream.write(&outBuffer, outPos) != outPos || res != SZ_OK)
-					throw DecompressException("Corrupted data in LZMA decompress");
+				if (output.write(&outBuffer, outPos) != outPos || res != SZ_OK)
+					return sc::DecompressorResult::LZMA_CORRUPTED_DATA_ERROR;
 
 				outPos = 0;
 
 				if (hasBound && unpackedSize == 0)
-					return;
+					DecompressorResult::DECOMPRESSION_SUCCES;
 
 				if (inProcessed == 0 && outProcessed == 0)
 				{
 					if (hasBound || status != LZMA_STATUS_FINISHED_WITH_MARK)
-						throw DecompressException("Decompress LZMA stream finished without END MARKER");
+						return sc::DecompressorResult::LZMA_MISSING_END_MARKER_ERROR;
 
-					return;
+					return sc::DecompressorResult::DECOMPRESSION_SUCCES;
 				}
 			}
 		}
 	}
+}
 
-	void LZMA::decompress(BytestreamBase& inStream, BytestreamBase& outStream)
-	{
-		CLzmaDec state;
-		Byte header[LZMA_PROPS_SIZE];
-		inStream.read(header, LZMA_PROPS_SIZE);
-
-		unsigned int unpackSize = 0;
-		inStream.read(&unpackSize, sizeof(unpackSize));
-
-		LzmaDec_Construct(&state);
-		LzmaDec_Allocate(&state, header, LZMA_PROPS_SIZE, &g_Alloc);
-
-		decompressStream(&state, unpackSize, inStream, outStream);
-
-		LzmaDec_Free(&state, &g_Alloc);
-	}
-
-	void LZMA::compress(BytestreamBase& inStream, BytestreamBase& outStream, int16_t theards)
-	{
-		CLzmaEncHandle enc;
-		SRes res;
-		CLzmaEncProps props;
-		enc = LzmaEnc_Create(&g_Alloc);
-		if (enc == 0)
-			throw CompressException("Failed to initialize LZMA compress stream");
-
-		LzmaEncProps_Init(&props);
-		props.level = 6;
-		props.pb = 2;
-		props.lc = 3;
-		props.lp = 0;
-#ifdef SC_MULTITHEARD
-		props.numThreads = theards > 0 ? theards : 1;
-#endif // !SC_MULTITHEARD
-
-		props.dictSize = LZMA_COMPRESS_DICT_SIZE;
-
-		if (inStream.size() > SMALL_FILE_SIZE)
-			props.lc = 4;
-
-		LzmaEncProps_Normalize(&props);
-		res = LzmaEnc_SetProps(enc, &props);
-
-		if (res == SZ_OK)
+namespace sc
+{
+	namespace LZMA {
+		DecompressorResult Decompress(BytestreamBase& input, BytestreamBase& output)
 		{
-			uint8_t header[LZMA_PROPS_SIZE];
-			size_t headerSize = LZMA_PROPS_SIZE;
-			res = LzmaEnc_WriteProperties(enc, header, &headerSize);
+			CLzmaDec state;
+			Byte header[LZMA_PROPS_SIZE];
+			input.read(header, LZMA_PROPS_SIZE);
 
-			outStream.write(&header, headerSize);
+			unsigned int unpackSize = 0;
+			input.read(&unpackSize, sizeof(unpackSize));
 
-			uint32_t outStreamSize = static_cast<uint32_t>(inStream.size());
+			LzmaDec_Construct(&state);
+			LzmaDec_Allocate(&state, header, LZMA_PROPS_SIZE, &g_Alloc);
 
-			outStream.write(&outStreamSize, sizeof(outStreamSize));
+			DecompressorResult result = DecompressStream(&state, unpackSize, input, output);
 
-			// Read stream wrap
-			CSeqInStreamWrap inWrap = {};
-			inWrap.vt.Read = LzmaStreamRead;
-			inWrap.inStream = &inStream;
+			LzmaDec_Free(&state, &g_Alloc);
 
-			// Write stream wrap
-			CSeqOutStreamWrap outWrap = {};
-			outWrap.vt.Write = LzmaStreamWrite;
-			outWrap.outStream = &outStream;
-			LzmaEnc_Encode(enc, &outWrap.vt, &inWrap.vt, nullptr, &g_Alloc, &g_Alloc);
+			return result;
 		}
 
-		LzmaEnc_Destroy(enc, &g_Alloc, &g_Alloc);
+		CompressorResult Compress(BytestreamBase& input, BytestreamBase& output, uint32_t threads)
+		{
+			CLzmaEncHandle enc;
+			SRes res;
+			CLzmaEncProps props;
+			enc = LzmaEnc_Create(&g_Alloc);
+			if (enc == 0) return CompressorResult::LZMA_STREAM_INIT_ERROR;
+
+			LzmaEncProps_Init(&props);
+			props.level = 6;
+			props.pb = 2;
+			props.lc = 3;
+			props.lp = 0;
+			props.numThreads = threads;
+
+			props.dictSize = LZMA_COMPRESS_DICT_SIZE;
+
+			if (input.size() > SMALL_FILE_SIZE)
+				props.lc = 4;
+
+			LzmaEncProps_Normalize(&props);
+			res = LzmaEnc_SetProps(enc, &props);
+
+			if (res == SZ_OK)
+			{
+				uint8_t header[LZMA_PROPS_SIZE];
+				size_t headerSize = LZMA_PROPS_SIZE;
+				res = LzmaEnc_WriteProperties(enc, header, &headerSize);
+
+				output.write(&header, headerSize);
+
+				uint32_t outStreamSize = static_cast<uint32_t>(input.size());
+
+				output.write(&outStreamSize, sizeof(outStreamSize));
+
+				// Read stream wrap
+				CSeqInStreamWrap inWrap = {};
+				inWrap.vt.Read = LzmaStreamRead;
+				inWrap.inStream = &input;
+
+				// Write stream wrap
+				CSeqOutStreamWrap outWrap = {};
+				outWrap.vt.Write = LzmaStreamWrite;
+				outWrap.outStream = &output;
+				LzmaEnc_Encode(enc, &outWrap.vt, &inWrap.vt, nullptr, &g_Alloc, &g_Alloc);
+			}
+
+			LzmaEnc_Destroy(enc, &g_Alloc, &g_Alloc);
+
+			return CompressorResult::COMPRESSION_SUCCES;
+		}
 	}
 }
