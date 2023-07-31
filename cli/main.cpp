@@ -192,13 +192,19 @@ int main(int argc, char* argv[])
 
 	// Flags
 	bool isCommon = OptionIn(argc, argv, "--common");
+	bool showMetadata = OptionIn(argc, argv, "--metadata");
 
 	// Timer
 	time_point startTime = high_resolution_clock::now();
 
 	// Modes
 	if (mode == "d") {
-		sc::ReadFileStream inStream(inFilepath);
+		sc::ReadFileStream input(inFilepath);
+		std::vector<uint8_t> buffer(input.size());
+		input.read(buffer.data(), buffer.size());
+		input.close();
+
+		sc::BufferStream inStream(&buffer);
 		sc::WriteFileStream outStream(outFilepath);
 
 		try {
@@ -206,7 +212,25 @@ int main(int argc, char* argv[])
 				sc::Decompressor::CommonDecompress(inStream, outStream);
 			}
 			else {
-				sc::Decompressor::Decompress(inStream, outStream);
+				sc::Decompressor::Decompress(inStream, outStream,
+					[showMetadata](const char* string, const char* hash, uint32_t hash_size) {
+						if (showMetadata)
+						{
+							std::cout << "Name: " << std::string(string) << std::endl;
+
+							if (hash != nullptr) {
+								char const hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+								std::cout << "Hash: ";
+								for (uint32_t i = 0; hash_size > i; i++) {
+									char const byte = hash[i];
+
+									std::cout << hex_chars[(byte & 0xF0) >> 4] << hex_chars[(byte & 0x0F) >> 0] << " ";
+								}
+								std::cout << std::endl << std::endl;
+							}
+						}
+					});
 			}
 		}
 		catch (const std::exception& err) {
