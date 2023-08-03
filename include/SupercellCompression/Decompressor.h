@@ -3,6 +3,7 @@
 #include "SupercellBytestream.h"
 
 #include <filesystem>
+#include <functional>
 namespace fs = std::filesystem;
 
 namespace sc
@@ -28,19 +29,21 @@ namespace sc
 
 	namespace Decompressor
 	{
+		typedef std::function<void(const char*, const char*, uint32_t)> MetadataCallback;
+
 		/**
 		 * Decompress file and then store it in cache, without need to decompress in the future.
 		 */
-		DecompressorResult Decompress(const fs::path& filepath, fs::path& outFilepath);
+		DecompressorResult Decompress(const fs::path& filepath, fs::path& outFilepath, MetadataCallback callback = {});
 
 		/**
 		 * Decompress file from stream.
 		 */
-		DecompressorResult Decompress(Bytestream& input, Bytestream& output);
+		DecompressorResult Decompress(BufferStream& input, Bytestream& output, MetadataCallback callback = {});
 
 		/**
 		 * Decompress assets like .csv or other compressed assets
 		 */
-		DecompressorResult CommonDecompress(Bytestream& input, Bytestream& output);
+		DecompressorResult CommonDecompress(BufferStream& input, Bytestream& output);
 	}
 }
