@@ -51,13 +51,14 @@ project "LZHAM"
         files {"src/lzhamcomp/lzham_win32_threading.cpp", "src/lzhamcomp/lzham_win32_threading.h"}
 
     filter {"system: not windows"}
+        links {
+            "pthread"
+        }
         files {"src/lzhamcomp/lzham_pthreads_threading.cpp"}
+        buildoptions {"-fno-strict-aliasing -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64"}
 
-    filter {"toolset:gcc or clang", "configurations:Debug"}
+    filter {"system: not windows", "configurations:Debug"}
         buildoptions {"-g -Wall -Wextra"}
 
-    filter {"toolset:gcc or clang", "configurations:Release"}
+    filter {"system: not windows", "configurations:Release"}
         buildoptions {"-Wall -Wextra -O3 -fomit-frame-pointer -fexpensive-optimizations"}
-
-    filter "toolset:gcc or clang"
-        buildoptions {"-fno-strict-aliasing -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64"}
