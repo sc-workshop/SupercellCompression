@@ -33,3 +33,8 @@ project "LZMA"
         symbols "off"
         optimize "on"
 
+    filter "system: not windows"
+        defines {
+            "WIN32=0"
+        }
+
