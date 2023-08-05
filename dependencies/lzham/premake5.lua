@@ -53,11 +53,11 @@ project "LZHAM"
     filter {"system: not windows"}
         files {"src/lzhamcomp/lzham_pthreads_threading.cpp"}
 
-    filter {"toolset:gcc", "configurations:Debug"}
+    filter {"toolset:gcc or clang", "configurations:Debug"}
         buildoptions {"-g -Wall -Wextra"}
 
-    filter {"toolset:gcc", "configurations:Release"}
+    filter {"toolset:gcc or clang", "configurations:Release"}
         buildoptions {"-Wall -Wextra -O3 -fomit-frame-pointer -fexpensive-optimizations"}
 
-    filter "toolset:gcc"
+    filter "toolset:gcc or clang"
         buildoptions {"-fno-strict-aliasing -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64"}
