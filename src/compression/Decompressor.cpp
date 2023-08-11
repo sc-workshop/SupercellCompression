@@ -328,13 +328,13 @@ namespace sc
 
 			result = CommonDecompress(input, output, signature);
 
-			input.close();
-			output.close();
-
 			if (!isCached)
 			{
 				SwfCache::WriteCacheInfo(filepath, hash, input.size());
 			}
+
+			input.close();
+			output.close();
 
 			return result;
 		}
