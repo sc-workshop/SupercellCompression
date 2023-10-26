@@ -1,5 +1,6 @@
 #pragma once
 
-#include "SupercellCompression/Compressor.h"
-#include "SupercellCompression/Decompressor.h"
-#include "SupercellCompression/Signature.h"
+#include "SupercellCompression/Lzma.h"
+#include "SupercellCompression/Zstd.h"
+#include "SupercellCompression/Lzham.h"
+#include "SupercellCompression/ScCompression.h"

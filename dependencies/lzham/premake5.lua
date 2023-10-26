@@ -4,9 +4,6 @@ project "LZHAM"
     language "C++"
     cppdialect "C++14"
 
-    targetdir "%{wks.location}/build/bin/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
-    objdir "%{wks.location}/build/obj/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
-
     files {
         "include/*"
     }
@@ -30,21 +27,12 @@ project "LZHAM"
     "src/lzhamcomp/lzham_lzcomp_state.cpp", "src/lzhamcomp/lzham_match_accel.cpp", "src/lzhamcomp/lzham_match_accel.h",
     "src/lzhamcomp/lzham_null_threading.h", "src/lzhamcomp/lzham_pthreads_threading.h", "src/lzhamcomp/lzham_threading.h"}
 
-    includedirs {"include", "src/lzhamcomp", "src/lzhamdecomp"}
+    includedirs {"src/lzhamcomp", "src/lzhamdecomp"}
 
     defines {"_LIB"}
 
     filter "configurations:Debug"
-        runtime "Debug"
         defines {"_DEBUG"}
-        symbols "on"
-        optimize "off"
-
-    filter "configurations:Release"
-        runtime "Release"
-        defines {"NDEBUG"}
-        symbols "off"
-        optimize "on"
 
     filter {"system:windows"}
         defines {"WIN32"}
