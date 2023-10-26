@@ -38,15 +38,15 @@ project "LZHAM"
         defines {"WIN32"}
         files {"src/lzhamcomp/lzham_win32_threading.cpp", "src/lzhamcomp/lzham_win32_threading.h"}
 
-    filter {"system: not windows"}
+    filter {"system:macosx", "system:linux", "system:android"}
         links {
             "pthread"
         }
         files {"src/lzhamcomp/lzham_pthreads_threading.cpp"}
         buildoptions {"-fno-strict-aliasing -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64"}
 
-    filter {"system: not windows", "configurations:Debug"}
+    filter {"toolset:clang", "toolset:gcc", "configurations:Debug"}
         buildoptions {"-g -Wall -Wextra"}
 
-    filter {"system: not windows", "configurations:Release"}
+    filter {"toolset:clang", "toolset:gcc", "configurations:Release"}
         buildoptions {"-Wall -Wextra -O3 -fomit-frame-pointer -fexpensive-optimizations"}
