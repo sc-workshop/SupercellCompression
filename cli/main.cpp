@@ -205,16 +205,22 @@ void printUsage()
 
 void print_time(time_point<high_resolution_clock> start, time_point<high_resolution_clock> end = high_resolution_clock::now()) {
 	milliseconds msTime = duration_cast<milliseconds>(end - start);
-	if (msTime.count() < 1000) {
-		std::cout << msTime.count() << " miliseconds";
-	}
-	else {
-		seconds secTime = duration_cast<seconds>(msTime);
+	seconds secTime = duration_cast<seconds>(msTime);
+	minutes minTime = duration_cast<minutes>(secTime);
 
+	if (minTime.count() > 0)
+	{
+		std::cout << minTime.count() << " minutes, ";
+		msTime -= duration_cast<milliseconds>(minTime);
+	}
+
+	if (secTime.count() > 0)
+	{
 		std::cout << secTime.count() << " seconds, ";
-
-		std::cout << (msTime - duration_cast<milliseconds>(secTime)).count() << " miliseconds" << std::endl;
+		msTime -= duration_cast<milliseconds>(secTime);
 	}
+
+	std::cout << msTime.count() << " miliseconds";
 }
 
 void LZMA_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions options)

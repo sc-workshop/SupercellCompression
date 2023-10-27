@@ -34,22 +34,17 @@ namespace sc
 			ZSTD_CCtx_setParameter(m_context, ZSTD_c_jobSize, props.jobSize);
 			ZSTD_CCtx_setParameter(m_context, ZSTD_c_overlapLog, props.overlapLog);
 
+			m_input_buffer = (uint8_t*)malloc(Input_Buffer_Size);
 			if (!m_input_buffer)
 			{
-				m_input_buffer = (uint8_t*)malloc(Input_Buffer_Size);
-				if (!m_input_buffer)
-				{
-					throw MemoryAllocationException(Input_Buffer_Size);
-				}
+				throw MemoryAllocationException(Input_Buffer_Size);
 			}
 
+			m_output_buffer = (uint8_t*)malloc(Output_Buffer_Size);
 			if (!m_output_buffer)
 			{
-				m_output_buffer = (uint8_t*)malloc(Output_Buffer_Size);
-				if (!m_output_buffer)
-				{
-					throw MemoryAllocationException(Output_Buffer_Size);
-				}
+				if (m_input_buffer) { free(m_input_buffer); }
+				throw MemoryAllocationException(Output_Buffer_Size);
 			}
 		}
 

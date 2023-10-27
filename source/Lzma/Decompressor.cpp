@@ -12,7 +12,7 @@ namespace sc
 		Lzma::Lzma(Byte header[LZMA_PROPS_SIZE], const UInt64 unpackedSize) : m_unpacked_size(unpackedSize)
 		{
 			LzmaDec_Construct(&m_context);
-			SRes res = LzmaDec_Allocate(&m_context, header, LZMA_PROPS_SIZE, &g_Alloc);
+			SRes res = LzmaDec_Allocate(&m_context, header, LZMA_PROPS_SIZE, &LzAllocObj);
 			if (res != SZ_OK)
 			{
 				throw LzmaDecompressInitException();
@@ -93,7 +93,7 @@ namespace sc
 
 		Lzma::~Lzma()
 		{
-			LzmaDec_Free(&m_context, &g_Alloc);
+			LzmaDec_Free(&m_context, &LzAllocObj);
 
 			if (m_input_buffer)
 			{

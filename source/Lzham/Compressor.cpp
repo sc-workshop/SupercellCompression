@@ -1,11 +1,10 @@
 #include "SupercellCompression/Lzham/Compressor.h"
 
-#include "exception/MemoryAllocationException.h"
+#include "memory/alloc.h"
 #include "SupercellCompression/exception/Lzham/CompressInitException.h"
 #include "SupercellCompression/exception/Lzham/CompressCorruptedDataException.h"
 
-#define my_max(a,b) (((a) > (b)) ? (a) : (b))
-#define my_min(a,b) (((a) < (b)) ? (a) : (b))
+#define min(a,b) (((a) < (b)) ? (a) : (b))
 
 namespace sc
 {
@@ -19,22 +18,15 @@ namespace sc
 				throw LzhamCompressInitException();
 			}
 
-			if (!m_input_buffer)
-			{
-				m_input_buffer = (uint8_t*)malloc(Lzham::Stream_Size);
-				if (!m_input_buffer)
-				{
-					throw MemoryAllocationException(Lzham::Stream_Size);
-				}
-			}
+			m_input_buffer = (uint8_t*)malloc(Lzham::Stream_Size);
+			m_output_buffer = (uint8_t*)malloc(Lzham::Stream_Size);
 
-			if (!m_output_buffer)
+			if (!m_input_buffer || m_output_buffer)
 			{
-				m_output_buffer = (uint8_t*)malloc(Lzham::Stream_Size);
-				if (!m_output_buffer)
-				{
-					throw MemoryAllocationException(Lzham::Stream_Size);
-				}
+				if (m_input_buffer) { free(m_input_buffer); }
+				if (m_output_buffer) { free(m_output_buffer); }
+
+				throw MemoryAllocationException(Lzham::Stream_Size);
 			}
 		}
 
@@ -65,7 +57,7 @@ namespace sc
 			{
 				if (input_buffer_offset == input_buffer_position)
 				{
-					input_buffer_position = static_cast<uint32_t>(my_min(Lzham::Stream_Size, remain_bytes));
+					input_buffer_position = static_cast<uint32_t>(min(Lzham::Stream_Size, remain_bytes));
 					if (input.read(m_input_buffer, input_buffer_position) != input_buffer_position)
 					{
 						throw LzhamCompressCorruptedDataException();

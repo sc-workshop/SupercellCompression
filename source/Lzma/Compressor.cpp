@@ -40,7 +40,7 @@ namespace sc
 	{
 		Lzma::Lzma(LzmaProps& props)
 		{
-			m_context = LzmaEnc_Create(&g_Alloc);
+			m_context = LzmaEnc_Create(&LzAllocObj);
 			if (!m_context)
 			{
 				throw LzmaCompressInitException();
@@ -79,12 +79,12 @@ namespace sc
 			CSeqOutStreamWrap outWrap = {};
 			outWrap.vt.Write = LzmaStreamWrite;
 			outWrap.output = &output;
-			LzmaEnc_Encode(m_context, &outWrap.vt, &inWrap.vt, nullptr, &g_Alloc, &g_Alloc);
+			LzmaEnc_Encode(m_context, &outWrap.vt, &inWrap.vt, nullptr, &LzAllocObj, &LzAllocObj);
 		}
 
 		Lzma::~Lzma()
 		{
-			LzmaEnc_Destroy(m_context, &g_Alloc, &g_Alloc);
+			LzmaEnc_Destroy(m_context, &LzAllocObj, &LzAllocObj);
 		}
 	}
 }
