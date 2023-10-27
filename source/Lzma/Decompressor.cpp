@@ -20,22 +20,17 @@ namespace sc
 
 			LzmaDec_Init(&m_context);
 
+			m_input_buffer = (uint8_t*)malloc(Lzma::Stream_Size);
 			if (!m_input_buffer)
 			{
-				m_input_buffer = (uint8_t*)malloc(Lzma::Stream_Size);
-				if (!m_input_buffer)
-				{
-					throw MemoryAllocationException(Lzma::Stream_Size);
-				}
+				throw MemoryAllocationException(Lzma::Stream_Size);
 			}
 
+			m_output_buffer = (uint8_t*)malloc(Lzma::Stream_Size);
 			if (!m_output_buffer)
 			{
-				m_output_buffer = (uint8_t*)malloc(Lzma::Stream_Size);
-				if (!m_output_buffer)
-				{
-					throw MemoryAllocationException(Lzma::Stream_Size);
-				}
+				if (m_input_buffer) { free(m_input_buffer); }
+				throw MemoryAllocationException(Lzma::Stream_Size);
 			}
 		}
 

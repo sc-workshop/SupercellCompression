@@ -212,6 +212,7 @@ void print_time(time_point<high_resolution_clock> start, time_point<high_resolut
 	{
 		std::cout << minTime.count() << " minutes, ";
 		msTime -= duration_cast<milliseconds>(minTime);
+		secTime -= duration_cast<seconds>(minTime);
 	}
 
 	if (secTime.count() > 0)

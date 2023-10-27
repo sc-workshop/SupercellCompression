@@ -20,7 +20,7 @@ namespace sc
 			m_input_buffer = (uint8_t*)malloc(Lzham::Stream_Size);
 			m_output_buffer = (uint8_t*)malloc(Lzham::Stream_Size);
 
-			if (!m_input_buffer || m_output_buffer)
+			if (!m_input_buffer || !m_output_buffer)
 			{
 				if (m_input_buffer) { free(m_input_buffer); }
 				if (m_output_buffer) { free(m_output_buffer); }
