@@ -16,12 +16,12 @@ project "SupercellCompression"
 
     includedirs
 	{
-		"include",
-		"core",
-		"dependencies/lzham/include",
-		"dependencies/lzma/include",
-		"dependencies/zstd/include",
-		"dependencies/astc/include"
+		"./include",
+		"%{wks.location}/core",
+		"./dependencies/lzham/include",
+		"./dependencies/lzma/include",
+		"./dependencies/zstd/include",
+		"./dependencies/astc/include"
 	}
 	
 	links {
