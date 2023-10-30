@@ -5,6 +5,28 @@ namespace sc
 {
 	namespace Decompressor
 	{
+		void Astc::read_header(Stream& buffer, uint16_t& width, uint16_t& height, uint8_t& blocks_x, uint8_t& blocks_y)
+		{
+			for (uint8_t i = 0; sizeof(AstcFileIdentifier) > i; i++)
+			{
+				if (buffer.read_unsigned_byte() != AstcFileIdentifier[i])
+				{
+					// TODO: exception
+				}
+			}
+
+			// x, y, z blocks
+			blocks_x = buffer.read_unsigned_byte();
+			blocks_y = buffer.read_unsigned_byte();
+			buffer.read_unsigned_byte();
+
+			width = buffer.read_unsigned_short();
+			buffer.seek(1, Seek::Add);
+
+			height = buffer.read_unsigned_short();
+			buffer.seek(1, Seek::Add);
+		};
+
 		Astc::Astc(AstcDecompressProps& props)
 		{
 			astcenc_error status;
@@ -42,7 +64,7 @@ namespace sc
 		{
 			astcenc_swizzle swizzle = get_astc_swizzle(type);
 
-			size_t data_size = Image::calculate_image_length(widht, height, type);
+			size_t data_size = (widht * height) * (uint8_t)type;
 			uint8_t* data = memalloc(data_size);
 
 			astcenc_image decoder_image;
@@ -53,7 +75,7 @@ namespace sc
 			decoder_image.data_type = ASTCENC_TYPE_U8;
 
 			astcenc_error status = astcenc_decompress_image(m_context, (uint8_t*)input.data(), input.length(), &decoder_image, &swizzle, 0);
-			if (!status)
+			if (status != ASTCENC_SUCCESS)
 			{
 				free(data);
 				// TODO: exceptions

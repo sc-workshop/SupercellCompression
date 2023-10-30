@@ -11,6 +11,7 @@ enum class CompressionMethod
 	LZMA = 0,
 	ZSTD,
 	LZHAM,
+	ASTC
 };
 
 enum class CompressionHeader
@@ -18,9 +19,10 @@ enum class CompressionHeader
 	None = 0,
 	LZHAM,
 	SC,
+	ASTC
 };
 
-enum class InputFormat
+enum class FileFormat
 {
 	Binary = 0,
 };
@@ -44,9 +46,9 @@ struct CommandLineOptions
 	fs::path output_path;
 
 	// Basic options
-	CompressionMethod method = CompressionMethod::LZMA;
-	CompressionHeader header = CompressionHeader::SC;
-	InputFormat input = InputFormat::Binary;
+	CompressionMethod method = CompressionMethod::ZSTD;
+	CompressionHeader header = CompressionHeader::None;
+	FileFormat output_format = FileFormat::Binary;
 	unsigned int threads = std::thread::hardware_concurrency();
 
 	// SC props

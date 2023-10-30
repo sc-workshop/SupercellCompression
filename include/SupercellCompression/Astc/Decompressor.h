@@ -1,5 +1,6 @@
 #pragma once
 #include "SupercellCompression/interface/ImageDecompressionInterface.h"
+#include "generic/image/raw_image.h"
 #include <astcenc_internal.h>
 
 namespace sc
@@ -18,6 +19,12 @@ namespace sc
 
 		class Astc : public ImageDecompressionInterface
 		{
+		public:
+			/// <summary>
+			/// Reads ASTC file header
+			/// </summary>
+			static void read_header(Stream& buffer, uint16_t& width, uint16_t& height, uint8_t& blocks_x, uint8_t& blocks_y);
+
 		public:
 			Astc(AstcDecompressProps& props);
 

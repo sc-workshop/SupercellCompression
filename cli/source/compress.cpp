@@ -1,7 +1,7 @@
 #include "main.h"
 #include "SupercellCompression.h"
 
-void LZHAM_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions options)
+void LZHAM_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
 	sc::Compressor::LzhamCompressProps props;
 	props.m_dict_size_log2 = 18;
@@ -38,7 +38,7 @@ void LZHAM_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions op
 	}
 }
 
-void LZMA_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions options)
+void LZMA_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
 	switch (options.header)
 	{
@@ -74,7 +74,7 @@ void LZMA_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions opt
 	}
 }
 
-void ZSTD_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions options)
+void ZSTD_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
 	switch (options.header)
 	{

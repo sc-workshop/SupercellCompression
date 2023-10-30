@@ -18,8 +18,8 @@ void print_usage()
 	std::cout << "> Additional options: " << std::endl;
 
 	std::cout << "	" << "General:" << std::endl;
-	std::cout << "		" << OptionPrefix"header: Sets header type for compression. Possible values - None, SC, LZHAM. Default - SC" << std::endl;
-	std::cout << "		" << OptionPrefix"method: Sets compression method by which file will be compressed. Possible values - LZMA, ZSTD, LZHAM. Default - LZMA" << std::endl;
+	std::cout << "		" << OptionPrefix"header: Sets header type for compression. Possible values - None, SC. Default - None" << std::endl;
+	std::cout << "		" << OptionPrefix"method: Sets compression method by which file will be compressed. Possible values - LZMA, ZSTD, LZHAM, ASTC. Default - ZSTD" << std::endl;
 
 	std::cout << "	" << "SC:" << std::endl;
 	std::cout << "		" << OptionPrefix"printMetadata: If file has metadata, it will be displayed in the console. Boolean option." << std::endl;
@@ -50,6 +50,74 @@ void print_time(time_point<high_resolution_clock> start, time_point<high_resolut
 	std::cout << msTime.count() << " miliseconds";
 }
 
+bool binary_compressing(sc::Stream& input_stream, sc::Stream& output_stream, CommandLineOptions& options)
+{
+	switch (options.method)
+	{
+	case CompressionMethod::LZMA:
+		LZMA_compress(input_stream, output_stream, options);
+		break;
+
+	case CompressionMethod::ZSTD:
+		ZSTD_compress(input_stream, output_stream, options);
+		break;
+
+	case CompressionMethod::LZHAM:
+		LZHAM_compress(input_stream, output_stream, options);
+		break;
+
+	default:
+		std::cout << "[ERROR] Unknown compression method" << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool binary_decompressing(sc::Stream& input_stream, sc::Stream& output_stream, CommandLineOptions& options)
+{
+	if (options.header != CompressionHeader::None)
+	{
+		switch (options.header)
+		{
+		case CompressionHeader::SC:
+			SC_decompress(input_stream, output_stream, options);
+			break;
+
+		default:
+			std::cout << "[ERROR] Unknown compression header" << std::endl;
+			return false;
+		}
+	}
+	else
+	{
+		switch (options.method)
+		{
+		case CompressionMethod::LZMA:
+			LZMA_decompress(input_stream, output_stream, options);
+			break;
+
+		case CompressionMethod::ZSTD:
+			ZSTD_decompress(input_stream, output_stream, options);
+			break;
+
+		case CompressionMethod::ASTC:
+			ASTC_decompress(input_stream, output_stream, options);
+			break;
+
+		case CompressionMethod::LZHAM:
+			LZHAM_decompress(input_stream, output_stream, options);
+			break;
+
+		default:
+			std::cout << "[ERROR] Unknown compression method" << std::endl;
+			return false;
+		}
+	}
+
+	return true;
+}
+
 int main(int argc, char* argv[])
 {
 	printf("SC Compression V2.0 - %s Command Line app - Compiled %s %s\n\n", PLATFORM, __DATE__, __TIME__);
@@ -71,114 +139,91 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	if (options.operation == Operations::Compress)
+	bool is_image_operation = false;
+
+	try
 	{
-		// -- Timer --
-		time_point start_time = high_resolution_clock::now();
-
-		sc::InputFileStream input_stream(options.input_path);
-		sc::BufferStream output_stream;
-
-		std::cout << "Compressing..." << std::endl;
-
-		try
+		if (options.operation == Operations::Compress)
 		{
-			switch (options.method)
+			// -- Timer --
+			time_point start_time = high_resolution_clock::now();
+
+			sc::InputFileStream input_stream(options.input_path);
+			sc::BufferStream output_stream;
+
+			std::cout << "Compressing..." << std::endl;
+
+			bool success;
+
+			if (is_image_operation)
 			{
-			case CompressionMethod::LZMA:
-				LZMA_compress(input_stream, output_stream, options);
-				break;
-
-			case CompressionMethod::ZSTD:
-				ZSTD_compress(input_stream, output_stream, options);
-				break;
-
-			case CompressionMethod::LZHAM:
-				LZHAM_compress(input_stream, output_stream, options);
-				break;
-
-			default:
-				break;
+				return 0;
 			}
-		}
-		catch (const sc::GeneralRuntimeException& exception)
-		{
-			std::cout << "[ERROR] " << exception.what() << std::endl;
-			return 1;
-		}
-
-		// Writing memory to file
-		{
-			sc::OutputFileStream output_file(options.output_path);
-			output_file.write(output_stream.data(), output_stream.length());
-		}
-
-		std::cout << "Compress operation took: ";
-		print_time(start_time);
-	}
-	else if (options.operation == Operations::Decompress)
-	{
-		// -- Timer --
-		time_point start_time = high_resolution_clock::now();
-
-		sc::BufferStream input_stream;
-		sc::OutputFileStream output_stream(options.output_path);
-
-		// Loading file to memory
-		{
-			sc::InputFileStream input_file(options.input_path);
-			input_stream.resize(input_file.length());
-			input_file.read(input_stream.data(), input_file.length());
-		}
-
-		std::cout << "Decompressing..." << std::endl;
-
-		if (options.header != CompressionHeader::None)
-		{
-			switch (options.header)
+			else
 			{
-			case CompressionHeader::LZHAM:
-				LZHAM_decompress(input_stream, output_stream, options);
-				break;
-			case CompressionHeader::SC:
-				SC_decompress(input_stream, output_stream, options);
-				break;
-			default:
-				break;
+				success = binary_compressing(input_stream, output_stream, options);
 			}
+
+			if (!success)
+			{
+				return 1;
+			}
+
+			// Writing memory to file
+			{
+				sc::OutputFileStream output_file(options.output_path);
+				output_file.write(output_stream.data(), output_stream.length());
+			}
+
+			std::cout << "Compress operation took: ";
+			print_time(start_time);
+		}
+		else if (options.operation == Operations::Decompress)
+		{
+			// -- Timer --
+			time_point start_time = high_resolution_clock::now();
+
+			sc::BufferStream input_stream;
+			sc::OutputFileStream output_stream(options.output_path);
+
+			// Loading file to memory
+			{
+				sc::InputFileStream input_file(options.input_path);
+				input_stream.resize(input_file.length());
+				input_file.read(input_stream.data(), input_file.length());
+			}
+
+			std::cout << "Decompressing..." << std::endl;
+
+			bool success;
+
+			if (is_image_operation)
+			{
+				return 0;
+			}
+			else
+			{
+				success = binary_decompressing(input_stream, output_stream, options);
+			}
+
+			if (!success)
+			{
+				return 1;
+			}
+
+			std::cout << "Decompress operation took: ";
+			print_time(start_time);
 		}
 		else
 		{
-			try
-			{
-				switch (options.method)
-				{
-				case CompressionMethod::LZMA:
-					LZMA_decompress(input_stream, output_stream, options);
-					break;
-
-				case CompressionMethod::ZSTD:
-					ZSTD_decompress(input_stream, output_stream, options);
-					break;
-
-				default:
-					break;
-				}
-			}
-			catch (const sc::GeneralRuntimeException& exception)
-			{
-				std::cout << "[ERROR] " << exception.what() << std::endl;
-				return 1;
-			}
+			std::cout << "[ERROR] Unknown operation" << std::endl;
+			return 0;
 		}
-
-		std::cout << "Decompress operation took: ";
-		print_time(start_time);
 	}
-	else
+	catch (const sc::GeneralRuntimeException& exception)
 	{
-		std::cout << "[ERROR] Unknown operation" << std::endl;
-		return 0;
+		std::cout << "[ERROR] " << exception.what() << std::endl;
+		return 1;
 	}
 
 	return 0;

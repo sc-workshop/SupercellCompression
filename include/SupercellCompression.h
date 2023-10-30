@@ -10,3 +10,4 @@
 
 // Compression headers
 #include "SupercellCompression/ScCompression.h"
+#include "SupercellCompression/KhronosTexture.h"

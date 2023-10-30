@@ -6,7 +6,7 @@
 
 #include "exception/GeneralRuntimeException.h"
 
-static const uint8_t KtxFileIdentifier[12] = {
+static const char KtxFileIdentifier[12] = {
 	'«', 'K', 'T', 'X', ' ', '1', '1', '»', '\r', '\n', '\x1A', '\n'
 };
 
@@ -264,7 +264,7 @@ namespace sc
 		{
 			for (uint8_t i = 0; sizeof(KtxFileIdentifier) > i; i++)
 			{
-				if (buffer.read_unsigned_byte() != KtxFileIdentifier[i])
+				if (buffer.read_byte() != KtxFileIdentifier[i])
 				{
 					// TODO: exception
 				}

@@ -38,6 +38,10 @@ CommandLineOptions::CommandLineOptions(int argc, char* argv[])
 			{
 				header = CompressionHeader::LZHAM;
 			}
+			else if (header_name == "astc")
+			{
+				header = CompressionHeader::ASTC;
+			}
 			else
 			{
 				std::cout << "[WARNING] An unknown type of header is specified. Instead, default is used - SC" << std::endl;
@@ -62,6 +66,10 @@ CommandLineOptions::CommandLineOptions(int argc, char* argv[])
 			else if (method_name == "lzham")
 			{
 				method = CompressionMethod::LZHAM;
+			}
+			else if (method_name == "astc")
+			{
+				method = CompressionMethod::ASTC;
 			}
 			else
 			{

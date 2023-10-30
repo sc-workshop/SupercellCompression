@@ -1,7 +1,7 @@
 #include "main.h"
 #include "SupercellCompression.h"
 
-void LZMA_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions options)
+void LZMA_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
 	uint8_t header[LZMA_PROPS_SIZE];
 	input.read(&header, LZMA_PROPS_SIZE);
@@ -20,7 +20,7 @@ void LZMA_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions o
 	context.decompress_stream(input, output);
 }
 
-void LZHAM_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions options)
+void LZHAM_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
 	uint32_t magic = input.read_int();
 	if (magic != '0HZL')
@@ -36,13 +36,27 @@ void LZHAM_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions 
 	context.decompress_stream(input, output);
 }
 
-void ZSTD_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions options)
+void ZSTD_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
 	sc::Decompressor::Zstd context;
 	context.decompress_stream(input, output);
 }
 
-void SC_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions options)
+void ASTC_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
+{
+	using namespace sc::Decompressor;
+
+	uint16_t width;
+	uint16_t height;
+	AstcDecompressProps props;
+
+	Astc::read_header(input, width, height, props.blocks_x, props.blocks_y);
+
+	Astc context(props);
+	context.decompress_image(width, height, sc::Image::BasePixelType::RGBA, input, output);
+}
+
+void SC_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
 	using namespace sc::ScCompression;
 
