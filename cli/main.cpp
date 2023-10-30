@@ -102,6 +102,11 @@ enum class CompressionHeader
 	SC,
 };
 
+enum class InputFormat
+{
+	Binary = 0,
+};
+
 // Helper class to parse options from command line
 struct CommandLineOptions
 {
@@ -170,6 +175,7 @@ struct CommandLineOptions
 	// Basic options
 	CompressionMethod method = CompressionMethod::LZMA;
 	CompressionHeader header = CompressionHeader::SC;
+	InputFormat input = InputFormat::Binary;
 	unsigned int threads = std::thread::hardware_concurrency();
 
 	// SC props

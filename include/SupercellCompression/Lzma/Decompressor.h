@@ -1,5 +1,5 @@
 #pragma once
-#include "SupercellCompression/DecompressionInterface.h"
+#include "SupercellCompression/interface/DecompressionInterface.h"
 
 namespace sc
 {

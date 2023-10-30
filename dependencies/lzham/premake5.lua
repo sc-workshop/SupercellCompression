@@ -27,7 +27,11 @@ project "LZHAM"
     "src/lzhamcomp/lzham_lzcomp_state.cpp", "src/lzhamcomp/lzham_match_accel.cpp", "src/lzhamcomp/lzham_match_accel.h",
     "src/lzhamcomp/lzham_null_threading.h", "src/lzhamcomp/lzham_pthreads_threading.h", "src/lzhamcomp/lzham_threading.h"}
 
-    includedirs {"src/lzhamcomp", "src/lzhamdecomp"}
+    includedirs {
+		"include",
+		"src/lzhamcomp",
+		"src/lzhamdecomp"
+	}
 
     defines {"_LIB"}
 

@@ -12,16 +12,21 @@ project "SupercellCompression"
 	-- Headers
 	files {
 		"include/**.h",
-		"source/**.h",
-		"core/**.h"
 	}
 
-    includedirs {
-        "include"
+    includedirs
+	{
+		"include",
+		"core",
+		"dependencies/lzham/include",
+		"dependencies/lzma/include",
+		"dependencies/zstd/include",
+		"dependencies/astc/include"
 	}
 	
 	links {
         "LZMA",
 		"LZHAM",
-		"Zstandard"
+		"Zstandard",
+		"ASTC"
     }

@@ -1,6 +1,6 @@
 #pragma once
-#include "SupercellCompression/DecompressionInterface.h"
-#include <common/zstd_internal.h>
+#include "SupercellCompression/Zstd.h"
+#include "SupercellCompression/interface/DecompressionInterface.h"
 
 namespace sc
 {

@@ -1,6 +1,5 @@
 #pragma once
-#include "SupercellCompression/Zstd.h"
-#include "SupercellCompression/CompressionInterface.h"
+#include "SupercellCompression/interface/CompressionInterface.h"
 
 #include <thread>
 

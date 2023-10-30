@@ -6,6 +6,11 @@ project "LZMA"
     files {
 		"src/**.c"
     }
+	
+	includedirs
+	{
+		"include"
+	}
 
     filter "system: not windows"
         defines {

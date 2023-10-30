@@ -5,7 +5,12 @@ project "Zstandard"
 
     files {"src/**.c"}
 
-    includedirs {"include/common", "include/compress", "include/decompress"}
+    includedirs {
+		"include",
+		"include/common",
+		"include/compress",
+		"include/decompress"
+	}
 
     defines {"ZSTD_DISABLE_ASM", "ZSTD_MULTITHREAD"}
 

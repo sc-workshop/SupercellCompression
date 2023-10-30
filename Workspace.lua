@@ -9,14 +9,6 @@ workspace "ScCompression"
 	targetdir "%{wks.location}/build/bin/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
     objdir "%{wks.location}/build/obj/%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}/%{prj.name}"
 	
-	includedirs
-	{
-		"%{wks.location}/core",
-		"%{wks.location}/dependencies/lzham/include",
-		"%{wks.location}/dependencies/lzma/include",
-		"%{wks.location}/dependencies/zstd/include"
-	}
-	
 	filter "configurations:Debug"
         runtime "Debug"
 
@@ -35,12 +27,19 @@ workspace "ScCompression"
         symbols "off"
         optimize "Speed"
 		
-	filter {}
+	filter ""
 	
-	include "./"
-	include "./cli"
+	group "Lib"
+		include "core"
+		include "./"
+		include "./cli"
 	
 	group "Compression"
         include "dependencies/lzma"
         include "dependencies/lzham"
         include "dependencies/zstd"
+		include "dependencies/astc"
+		
+	
+	
+	

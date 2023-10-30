@@ -1,6 +1,6 @@
 #pragma once
 #include "SupercellCompression/Lzham.h"
-#include "SupercellCompression/CompressionInterface.h"
+#include "SupercellCompression/interface/CompressionInterface.h"
 
 namespace sc
 {

@@ -1,6 +1,6 @@
 #include "SupercellCompression/Lzham/Compressor.h"
 
-#include "memory/alloc.h"
+#include "exception/MemoryAllocationException.h"
 #include "SupercellCompression/exception/Lzham/CompressInitException.h"
 #include "SupercellCompression/exception/Lzham/CompressCorruptedDataException.h"
 
