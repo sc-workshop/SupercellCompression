@@ -6,7 +6,7 @@ project "SupercellCompressionCLI"
     cppdialect "C++17"
 
     files {
-        "main.cpp"
+        "source/**"
     }
 
     includedirs {
