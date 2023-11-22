@@ -6,8 +6,9 @@
 
 #include "exception/GeneralRuntimeException.h"
 
-static const char KtxFileIdentifier[12] = {
-	'«', 'K', 'T', 'X', ' ', '1', '1', '»', '\r', '\n', '\x1A', '\n'
+static const uint8_t KtxFileIdentifier[12] = {
+	//'Â«', 'K', 'T', 'X', ' ', '1', '1', 'Â»', '\r', '\n', '\x1A', '\n'
+	0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0A, 0x1A, 0x0A
 };
 
 namespace sc
@@ -184,6 +185,30 @@ namespace sc
 			}
 		}
 
+		virtual PixelDepth depth() const
+		{
+			switch (m_internalFormat)
+			{
+			case sc::KhronosTexture::glInternalFormat::GL_RGBA8:
+				return PixelDepth::RGBA8;
+			case sc::KhronosTexture::glInternalFormat::GL_RGB8:
+				return PixelDepth::RGB8;
+			case sc::KhronosTexture::glInternalFormat::GL_LUMINANCE:
+				return PixelDepth::LUMINANCE8;
+			case sc::KhronosTexture::glInternalFormat::GL_LUMINANCE_ALPHA:
+				return PixelDepth::LUMINANCE8_ALPHA8;
+
+			case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4:
+			case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_5x5:
+			case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_6x6:
+			case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_8x8:
+				return PixelDepth::RGBA8;
+
+			default:
+				break;
+			}
+		};
+
 		virtual size_t data_length()
 		{
 			return m_buffer.length();
@@ -237,7 +262,7 @@ namespace sc
 
 		virtual size_t decompressed_data_length()
 		{
-			return Image::calculate_image_length(m_width, m_height, base_type());
+			return Image::calculate_image_length(m_width, m_height, depth());
 		}
 
 		virtual void decompress_data(Stream& output)
