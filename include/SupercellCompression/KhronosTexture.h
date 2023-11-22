@@ -209,12 +209,12 @@ namespace sc
 			}
 		};
 
-		virtual size_t data_length()
+		virtual size_t data_length() const
 		{
 			return m_buffer.length();
 		}
 
-		virtual uint8_t* data()
+		virtual uint8_t* data() const
 		{
 			return (uint8_t*)m_buffer.data();
 		}
