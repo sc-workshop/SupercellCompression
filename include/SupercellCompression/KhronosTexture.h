@@ -1,5 +1,7 @@
 #pragma once
 
+#include <assert.h>
+
 #include "Astc.h"
 #include "generic/image/compressed_image.h"
 #include "io/buffer_stream.h"
@@ -61,15 +63,34 @@ namespace sc
 		};
 
 	public:
+
+		/// <summary>
+		/// Reads ktx1 file from stream
+		/// </summary>
+		/// <param name="buffer"></param>
 		KhronosTexture(Stream& buffer)
 		{
-			size_t data_size = read_header(buffer);
+			uint32_t levels_count = read_header(buffer);
 
-			m_buffer.resize(data_size);
-			buffer.read(m_buffer.data(), data_size);
+			m_levels.reserve(levels_count);
+			for (uint32_t level_index = 0; levels_count > level_index; level_index++)
+			{
+				uint32_t level_length = buffer.read_unsigned_int();
+				m_levels.push_back(MemoryStream(level_length));
+				buffer.read(m_levels[level_index].data(), level_length);
+			}
+
+			//m_buffer.resize(data_size);
+			//buffer.read(m_buffer.data(), data_size);
 		}
 
-		KhronosTexture(glInternalFormat format, uint8_t* buffer, size_t buffer_size) : m_internalFormat(format)
+		/// <summary>
+		/// Initializes a object with specified format from provided buffer. Buffer is accepted as is and will not be compressed.
+		/// </summary>
+		/// <param name="format"></param>
+		/// <param name="buffer"></param>
+		/// <param name="buffer_size"></param>
+		KhronosTexture(glInternalFormat format, uint8_t* buffer, size_t buffer_size) : m_internal_format(format)
 		{
 			m_format = get_type(format);
 
@@ -82,8 +103,62 @@ namespace sc
 				m_type = glType::COMPRESSED;
 			}
 
-			m_buffer.read(buffer, buffer_size);
+			m_levels.push_back(MemoryStream(buffer_size));
+			MemoryStream& stream = m_levels[0];
+			stream.write(buffer, buffer_size);
+			stream.seek(0);
 		}
+
+		/// <summary>
+		/// Initializes an object from provided Raw Image and compresses it if necessary.
+		/// </summary>
+		/// <param name="image"></param>
+		/// <param name="format"></param>
+		KhronosTexture(RawImage& image, glInternalFormat format) : m_internal_format(format)
+		{
+			m_format = get_type(format);
+			m_width = image.width();
+			m_height = image.height();
+
+			uint8_t* buffer = nullptr;
+
+			// Converting Depth
+			Image::PixelDepth source_depth = image.depth();
+			Image::PixelDepth destination_depth = depth();
+
+			if (source_depth != destination_depth)
+			{
+				buffer = memalloc(Image::calculate_image_length(m_width, m_height, destination_depth));
+				Image::remap(
+					image.data(), buffer,
+					m_width, m_height,
+					source_depth, destination_depth
+				);
+			}
+
+			if (is_compressed())
+			{
+				m_type = glType::COMPRESSED;
+				// TODO: Image compression yeah
+			}
+			else
+			{
+				m_type = glType::GL_UNSIGNED_BYTE;
+
+				size_t image_length = Image::calculate_image_length(m_width, m_height, depth());
+
+				m_levels.push_back(MemoryStream(image_length));
+				MemoryStream& stream = m_levels[0];
+				stream.write(buffer ? buffer : image.data(), image_length);
+				stream.seek(0);
+			}
+
+			if (buffer)
+			{
+				free(buffer);
+			}
+		}
+
 	public:
 		virtual void write(Stream& buffer)
 		{
@@ -112,7 +187,7 @@ namespace sc
 			buffer.write_unsigned_int(is_compressed ? 0 : (uint32_t)m_format);
 
 			// glInternalFormat
-			buffer.write_unsigned_int((uint32_t)m_internalFormat);
+			buffer.write_unsigned_int((uint32_t)m_internal_format);
 
 			// glBaseInternalType
 			buffer.write_unsigned_int((uint32_t)m_format);
@@ -131,15 +206,17 @@ namespace sc
 			buffer.write_unsigned_int(1);
 
 			// numberOfMipmapLevels
-			buffer.write_unsigned_int(m_mip_map_level_count);
+			buffer.write_unsigned_int(m_levels.size());
 
 			// bytesOfKeyValueData
 			buffer.write_unsigned_int(0);
 
-			// imageSize
-			buffer.write_unsigned_int(static_cast<uint32_t>(m_buffer.length()));
-
-			buffer.write(m_buffer.data(), m_buffer.length());
+			for (MemoryStream& level : m_levels)
+			{
+				uint32_t image_length = static_cast<uint32_t>(level.length());
+				buffer.write_unsigned_int(image_length);
+				buffer.write(level.data(), image_length);
+			}
 		}
 
 	public:
@@ -187,7 +264,7 @@ namespace sc
 
 		virtual PixelDepth depth() const
 		{
-			switch (m_internalFormat)
+			switch (m_internal_format)
 			{
 			case sc::KhronosTexture::glInternalFormat::GL_RGBA8:
 				return PixelDepth::RGBA8;
@@ -211,17 +288,31 @@ namespace sc
 
 		virtual size_t data_length() const
 		{
-			return m_buffer.length();
+			return data_length(0);
+		}
+
+		size_t data_length(uint32_t level_index = 0) const
+		{
+			if (level_index >= m_levels.size()) level_index = m_levels.size() - 1;
+
+			return m_levels[level_index].length();
 		}
 
 		virtual uint8_t* data() const
 		{
-			return (uint8_t*)m_buffer.data();
+			return data(0);
+		}
+
+		uint8_t* data(uint32_t level_index = 0) const
+		{
+			if (level_index >= m_levels.size()) level_index = m_levels.size() - 1;
+
+			return (uint8_t*)m_levels[level_index].data();
 		}
 
 		virtual bool is_compressed() const
 		{
-			switch (m_internalFormat)
+			switch (m_internal_format)
 			{
 			case sc::KhronosTexture::glInternalFormat::GL_RGBA8:
 			case sc::KhronosTexture::glInternalFormat::GL_RGB8:
@@ -242,7 +333,7 @@ namespace sc
 
 		KhronosTextureCompression compression_type()
 		{
-			switch (m_internalFormat)
+			switch (m_internal_format)
 			{
 			case sc::KhronosTexture::glInternalFormat::GL_RGBA8:
 			case sc::KhronosTexture::glInternalFormat::GL_RGB8:
@@ -262,21 +353,41 @@ namespace sc
 
 		virtual size_t decompressed_data_length()
 		{
-			return Image::calculate_image_length(m_width, m_height, depth());
+			return decompressed_data_length(0);
+		}
+
+		size_t decompressed_data_length(uint32_t level = 1)
+		{
+			return Image::calculate_image_length(m_width / level, m_height / level, depth());
 		}
 
 		virtual void decompress_data(Stream& output)
 		{
+			return decompress_data(output, 0);
+		}
+
+		void decompress_data(Stream& output, uint32_t level_index = 0)
+		{
+			if (level_index >= m_levels.size()) level_index = m_levels.size() - 1;
+
 			switch (compression_type())
 			{
 			case KhronosTextureCompression::ASTC:
-				decompress_astc(output);
+				decompress_astc(output, level_index);
 				break;
 
 			default:
-				output.write(m_buffer.data(), m_buffer.length());
+				output.write(m_levels[level_index].data(), m_levels[level_index].length());
 				break;
 			}
+		}
+
+		/// <summary>
+		/// Input data must clearly correspond to properties of current object such as width, height, depth
+		/// </summary>
+		/// <param name="stream"></param>
+		void compress_data(Stream& stream)
+		{
 		}
 
 	private:
@@ -284,8 +395,8 @@ namespace sc
 		/// Reads KTX header
 		/// </summary>
 		/// <param name="buffer"></param>
-		/// <returns> Image data length </returns>
-		size_t read_header(Stream& buffer)
+		/// <returns> Image levels count </returns>
+		uint32_t read_header(Stream& buffer)
 		{
 			for (uint8_t i = 0; sizeof(KtxFileIdentifier) > i; i++)
 			{
@@ -305,7 +416,7 @@ namespace sc
 
 			glFormat format = (glFormat)buffer.read_unsigned_int();
 
-			m_internalFormat = (glInternalFormat)buffer.read_unsigned_int();
+			m_internal_format = (glInternalFormat)buffer.read_unsigned_int();
 			glFormat internalBasetype = (glFormat)buffer.read_unsigned_int();
 
 			if (format == glFormat::UNKNOWN)
@@ -320,27 +431,23 @@ namespace sc
 			m_width = static_cast<uint16_t>(buffer.read_unsigned_int());
 			m_height = static_cast<uint16_t>(buffer.read_unsigned_int());
 
-			// pixelDepth | must be 0
-			uint32_t pixelDepth = buffer.read_unsigned_int();
-			if (pixelDepth != 0)
-			{
-				throw GeneralRuntimeException();
-			}
+			// pixelDepth | must be 0										//
+			assert(buffer.read_unsigned_int() == 0, "Pixel Depth != 0");	//
+																			//
+			// numberOfArrayElements | must be 0							// Some hardcoded/unsuported values
+			assert(buffer.read_unsigned_int() == 0, "Array elements != 0"); //
+																			//
+			// numberOfFaces | must be 1									//
+			assert(buffer.read_unsigned_int() == 1, "Faces number != 1");	//
 
-			// numberOfArrayElements | must be 0
-			buffer.read_unsigned_int();
-
-			// numberOfFaces | must be 1
-			buffer.read_unsigned_int();
-
-			m_mip_map_level_count = buffer.read_unsigned_int();
+			uint32_t levels_count = buffer.read_unsigned_int();
 
 			uint32_t key_value_data_length = buffer.read_unsigned_int();
 
 			// skip
 			buffer.seek(key_value_data_length, Seek::Add);
 
-			return buffer.read_unsigned_int();
+			return levels_count;
 		}
 
 		glFormat get_type(glInternalFormat format)
@@ -366,12 +473,12 @@ namespace sc
 			}
 		};
 
-		void decompress_astc(Stream& output)
+		void decompress_astc(Stream& output, uint32_t level_index = 0)
 		{
 			uint32_t blocks_x = 0;
 			uint32_t blocks_y = 0;
 
-			switch (m_internalFormat)
+			switch (m_internal_format)
 			{
 			case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4:
 				blocks_x = 4; blocks_y = 4;
@@ -394,20 +501,20 @@ namespace sc
 			props.blocks_y = blocks_y;
 			props.profile = colorspace() == ColorSpace::Linear ? ASTCENC_PRF_LDR : ASTCENC_PRF_LDR_SRGB;
 
+			MemoryStream& buffer = m_levels[level_index];
+
 			Decompressor::Astc context(props);
 			context.decompress_image(
 				m_width, m_height, base_type(),
-				MemoryStream((uint8_t*)m_buffer.data(), m_buffer.length()), output
+				buffer, output
 			);
 		}
 
 	private:
 		glType m_type;
 		glFormat m_format;
-		glInternalFormat m_internalFormat;
+		glInternalFormat m_internal_format;
 
-		uint32_t m_mip_map_level_count = 1;
-
-		BufferStream m_buffer;
+		std::vector<MemoryStream> m_levels;
 	};
 }
