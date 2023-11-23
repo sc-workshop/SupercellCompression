@@ -6,7 +6,7 @@ void LZHAM_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& o
 	sc::Compressor::LzhamCompressProps props;
 	props.m_dict_size_log2 = 18;
 
-	switch (options.header)
+	switch (options.binary.header)
 	{
 	case CompressionHeader::SC:
 	{
@@ -40,7 +40,7 @@ void LZHAM_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& o
 
 void LZMA_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
-	switch (options.header)
+	switch (options.binary.header)
 	{
 	case CompressionHeader::SC:
 	{
@@ -61,7 +61,7 @@ void LZMA_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& op
 		props.pb = 2;
 		props.lc = 3;
 		props.lp = 0;
-		props.use_long_unpacked_length = options.use_long_unpacked_length;
+		props.use_long_unpacked_length = options.binary.lzma.use_long_unpacked_length;
 		props.numThreads = options.threads;
 
 		sc::Compressor::Lzma context(props);
@@ -76,7 +76,7 @@ void LZMA_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& op
 
 void ZSTD_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
-	switch (options.header)
+	switch (options.binary.header)
 	{
 	case CompressionHeader::SC:
 	{

@@ -1,13 +1,15 @@
 #include "main.h"
 #include "SupercellCompression.h"
 
+#include "stb/stb.h"
+
 void LZMA_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
 	uint8_t header[LZMA_PROPS_SIZE];
 	input.read(&header, LZMA_PROPS_SIZE);
 
 	uint64_t unpacked_length;
-	if (options.use_long_unpacked_length)
+	if (options.binary.lzma.use_long_unpacked_length)
 	{
 		unpacked_length = input.read_unsigned_long();
 	}
@@ -45,6 +47,7 @@ void ZSTD_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& 
 void ASTC_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
 	using namespace sc::Decompressor;
+	using namespace sc;
 
 	uint16_t width;
 	uint16_t height;
@@ -53,14 +56,27 @@ void ASTC_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& 
 	Astc::read_header(input, width, height, props.blocks_x, props.blocks_y);
 
 	Astc context(props);
-	context.decompress_image(width, height, sc::Image::BasePixelType::RGBA, input, output);
+	if (options.file_format == FileFormat::Image)
+	{
+		BufferStream buffer;
+		context.decompress_image(width, height, sc::Image::BasePixelType::RGBA, input, buffer);
+
+		RawImage image((uint8_t*)buffer.data(), width, height, Image::BasePixelType::RGBA, Image::PixelDepth::RGBA8, Image::ColorSpace::Linear);
+
+		// TODO: Fix Sliding Blocks
+		stbi_flip_vertically_on_write(true);
+		stb::write_image(image, options.output_path.extension().string(), output);
+	}
+	else if (options.file_format == FileFormat::Binary) {
+		context.decompress_image(width, height, sc::Image::BasePixelType::RGBA, input, output);
+	}
 }
 
 void SC_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
 	using namespace sc::ScCompression;
 
-	if (options.printMetadata)
+	if (options.binary.sc.print_metadata)
 	{
 		MetadataAssetArray array;
 		Decompressor::decompress(input, output, &array);

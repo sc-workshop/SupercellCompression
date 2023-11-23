@@ -15,10 +15,20 @@ CommandLineOptions::CommandLineOptions(int argc, char* argv[])
 		{
 			operation = Operations::Decompress;
 		}
+
+		if (operation_name == "v" || operation_name == "convert")
+		{
+			operation = Operations::Convert;
+		}
 	}
 
 	input_path = fs::path(argv[2]);
 	output_path = fs::path(argv[3]);
+
+	if (is_option_in(argc, argv, OptionPrefix "threads"))
+	{
+		threads = get_int_option(argc, argv, OptionPrefix "threads");
+	}
 
 	{
 		std::string header_name = get_option(argc, argv, OptionPrefix "header");
@@ -28,19 +38,19 @@ CommandLineOptions::CommandLineOptions(int argc, char* argv[])
 
 			if (header_name == "none")
 			{
-				header = CompressionHeader::None;
+				binary.header = CompressionHeader::None;
 			}
 			else if (header_name == "sc")
 			{
-				header = CompressionHeader::SC;
+				binary.header = CompressionHeader::SC;
 			}
 			else if (header_name == "lzham")
 			{
-				header = CompressionHeader::LZHAM;
+				binary.header = CompressionHeader::LZHAM;
 			}
 			else if (header_name == "astc")
 			{
-				header = CompressionHeader::ASTC;
+				binary.header = CompressionHeader::ASTC;
 			}
 			else
 			{
@@ -57,19 +67,19 @@ CommandLineOptions::CommandLineOptions(int argc, char* argv[])
 
 			if (method_name == "lzma")
 			{
-				method = CompressionMethod::LZMA;
+				binary.method = CompressionMethod::LZMA;
 			}
 			else if (method_name == "zstd")
 			{
-				method = CompressionMethod::ZSTD;
+				binary.method = CompressionMethod::ZSTD;
 			}
 			else if (method_name == "lzham")
 			{
-				method = CompressionMethod::LZHAM;
+				binary.method = CompressionMethod::LZHAM;
 			}
 			else if (method_name == "astc")
 			{
-				method = CompressionMethod::ASTC;
+				binary.method = CompressionMethod::ASTC;
 			}
 			else
 			{
@@ -78,12 +88,28 @@ CommandLineOptions::CommandLineOptions(int argc, char* argv[])
 		}
 	}
 
-	use_long_unpacked_length = get_bool_option(argc, argv, OptionPrefix "longUnpackedLength");
-
-	if (is_option_in(argc, argv, OptionPrefix "threads"))
 	{
-		threads = get_int_option(argc, argv, OptionPrefix "threads");
+		std::string param = get_option(argc, argv, OptionPrefix "format");
+		if (!param.empty())
+		{
+			make_lowercase(param);
+
+			if (param == "binary")
+			{
+				file_format = FileFormat::Binary;
+			}
+			else if (param == "image")
+			{
+				file_format = FileFormat::Image;
+			}
+			else
+			{
+				std::cout << "[WARNING] An unknown type of file format is specified. Instead, default is used - Binary" << std::endl;
+			}
+		}
 	}
 
-	printMetadata = is_option_in(argc, argv, OptionPrefix "printMetadata");
+	binary.lzma.use_long_unpacked_length = get_bool_option(argc, argv, OptionPrefix "longUnpackedLength");
+
+	binary.sc.print_metadata = is_option_in(argc, argv, OptionPrefix "print_metadata");
 }

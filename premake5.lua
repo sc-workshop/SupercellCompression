@@ -25,6 +25,7 @@ project "SupercellCompression"
 	}
 	
 	links {
+		"SupercellCore",
         "LZMA",
 		"LZHAM",
 		"Zstandard",

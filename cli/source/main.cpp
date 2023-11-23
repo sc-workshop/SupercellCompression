@@ -4,28 +4,34 @@
 #include "io/file_stream.h"
 #include "exception/GeneralRuntimeException.h"
 
+#define print(text) std::cout << text << std::endl
+
 void print_usage()
 {
-	std::cout << "> Usage: {Operation} {input_file} {output_file} {...options}" << std::endl;
-	std::cout << "> Example: c file.bin file_compressed.bin --header=SC --method=zstd" << std::endl;
+	print("> Usage: {Operation} {input_file} {output_file} {...options}");
+	print("> Example: c file.bin file_compressed.bin --header=SC --method=zstd");
 
 	std::cout << std::endl;
-	std::cout << "> Operations: " << std::endl;
-	std::cout << "> d, decompress: Decompress file" << std::endl;
-	std::cout << "> c, compress: Compress file" << std::endl;
+	print("> Operations: ");
+	print("> d, decompress: Decompress file");
+	print("> c, compress: Compress file");
+	print("> v, convert: Convert file from one data type to other");
 	std::cout << std::endl;
 
-	std::cout << "> Additional options: " << std::endl;
+	print("> Additional options: ");
 
-	std::cout << "	" << "General:" << std::endl;
-	std::cout << "		" << OptionPrefix"header: Sets header type for compression. Possible values - None, SC. Default - None" << std::endl;
-	std::cout << "		" << OptionPrefix"method: Sets compression method by which file will be compressed. Possible values - LZMA, ZSTD, LZHAM, ASTC. Default - ZSTD" << std::endl;
+	print("General:");
+	print("		" OptionPrefix"header: Sets header type for compression. Possible values - None, SC. Default - None");
+	print("		" OptionPrefix"method: Sets compression method by which file will be compressed. Possible values - LZMA, ZSTD, LZHAM, ASTC. Default - ZSTD");
+	print("		" OptionPrefix"format: Defines behavior for some compression modes. Possible values - Binary, Image. Default - Binary");
+	print("		" "Option notes: ");
+	print("		" "> When using image format and ASTC decompression, file will be saved as a PNG image or other available format depending on extension. Otherwise, image buffer will be saved as is");
 
-	std::cout << "	" << "SC:" << std::endl;
-	std::cout << "		" << OptionPrefix"printMetadata: If file has metadata, it will be displayed in the console. Boolean option." << std::endl;
+	print("SC:");
+	print("		" OptionPrefix"print_metadata: If file has metadata, it will be displayed in the console. Boolean option.");
 
-	std::cout << "	" << "LZMA:" << std::endl;
-	std::cout << "		" << OptionPrefix"longUnpackedLength: Writes length of decompressed data in classic long bytes. Boolean option." << std::endl;
+	print("LZMA:");
+	print("		" OptionPrefix"longUnpackedLength: Writes length of decompressed data in classic long bytes. Boolean option.");
 }
 
 void print_time(time_point<high_resolution_clock> start, time_point<high_resolution_clock> end)
@@ -52,7 +58,7 @@ void print_time(time_point<high_resolution_clock> start, time_point<high_resolut
 
 bool binary_compressing(sc::Stream& input_stream, sc::Stream& output_stream, CommandLineOptions& options)
 {
-	switch (options.method)
+	switch (options.binary.method)
 	{
 	case CompressionMethod::LZMA:
 		LZMA_compress(input_stream, output_stream, options);
@@ -76,9 +82,9 @@ bool binary_compressing(sc::Stream& input_stream, sc::Stream& output_stream, Com
 
 bool binary_decompressing(sc::Stream& input_stream, sc::Stream& output_stream, CommandLineOptions& options)
 {
-	if (options.header != CompressionHeader::None)
+	if (options.binary.header != CompressionHeader::None)
 	{
-		switch (options.header)
+		switch (options.binary.header)
 		{
 		case CompressionHeader::SC:
 			SC_decompress(input_stream, output_stream, options);
@@ -91,7 +97,7 @@ bool binary_decompressing(sc::Stream& input_stream, sc::Stream& output_stream, C
 	}
 	else
 	{
-		switch (options.method)
+		switch (options.binary.method)
 		{
 		case CompressionMethod::LZMA:
 			LZMA_decompress(input_stream, output_stream, options);
@@ -120,7 +126,7 @@ bool binary_decompressing(sc::Stream& input_stream, sc::Stream& output_stream, C
 
 int main(int argc, char* argv[])
 {
-	printf("SC Compression V2.0 - %s Command Line app - Compiled %s %s\n\n", PLATFORM, __DATE__, __TIME__);
+	printf("Ultimate SC Compression Tool - %s Command Line app - Compiled %s %s\n\n", PLATFORM, __DATE__, __TIME__);
 	if (argc < 4) {
 		print_usage();
 		return 0;
@@ -139,8 +145,6 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	bool is_image_operation = false;
-
 	try
 	{
 		if (options.operation == Operations::Compress)
@@ -153,18 +157,7 @@ int main(int argc, char* argv[])
 
 			std::cout << "Compressing..." << std::endl;
 
-			bool success;
-
-			if (is_image_operation)
-			{
-				return 0;
-			}
-			else
-			{
-				success = binary_compressing(input_stream, output_stream, options);
-			}
-
-			if (!success)
+			if (!binary_compressing(input_stream, output_stream, options))
 			{
 				return 1;
 			}
@@ -195,18 +188,7 @@ int main(int argc, char* argv[])
 
 			std::cout << "Decompressing..." << std::endl;
 
-			bool success;
-
-			if (is_image_operation)
-			{
-				return 0;
-			}
-			else
-			{
-				success = binary_decompressing(input_stream, output_stream, options);
-			}
-
-			if (!success)
+			if (!binary_decompressing(input_stream, output_stream, options))
 			{
 				return 1;
 			}
