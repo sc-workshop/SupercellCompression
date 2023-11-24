@@ -25,6 +25,9 @@ namespace sc
 
 			height = buffer.read_unsigned_short();
 			buffer.seek(1, Seek::Add);
+
+			// dim_z
+			buffer.seek(3, Seek::Add);
 		};
 
 		Astc::Astc(AstcDecompressProps& props)
@@ -74,7 +77,10 @@ namespace sc
 			decoder_image.data = reinterpret_cast<void**>(&data);
 			decoder_image.data_type = ASTCENC_TYPE_U8;
 
-			astcenc_error status = astcenc_decompress_image(m_context, (uint8_t*)input.data() + input.position(), input.length(), &decoder_image, &swizzle, 0);
+			uint8_t* input_data = (uint8_t*)input.data() + input.position();
+			size_t input_data_length = input.length() - input.position();
+
+			astcenc_error status = astcenc_decompress_image(m_context, input_data, input_data_length, &decoder_image, &swizzle, 0);
 			if (status != ASTCENC_SUCCESS)
 			{
 				free(data);
