@@ -31,30 +31,26 @@ CommandLineOptions::CommandLineOptions(int argc, char* argv[])
 	}
 
 	{
-		std::string header_name = get_option(argc, argv, OptionPrefix "header");
-		if (!header_name.empty())
+		std::string container_name = get_option(argc, argv, OptionPrefix "container");
+		if (!container_name.empty())
 		{
-			make_lowercase(header_name);
+			make_lowercase(container_name);
 
-			if (header_name == "none")
+			if (container_name == "none")
 			{
-				binary.header = CompressionHeader::None;
+				binary.container = FileContainer::None;
 			}
-			else if (header_name == "sc")
+			else if (container_name == "sc")
 			{
-				binary.header = CompressionHeader::SC;
+				binary.container = FileContainer::SC;
 			}
-			else if (header_name == "lzham")
+			else if (container_name == "astc")
 			{
-				binary.header = CompressionHeader::LZHAM;
-			}
-			else if (header_name == "astc")
-			{
-				binary.header = CompressionHeader::ASTC;
+				binary.container = FileContainer::ASTC;
 			}
 			else
 			{
-				std::cout << "[WARNING] An unknown type of header is specified. Instead, default is used - SC" << std::endl;
+				std::cout << "[WARNING] An unknown type of container is specified. Instead, default is used - SC" << std::endl;
 			}
 		}
 	}

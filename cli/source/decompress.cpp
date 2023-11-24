@@ -61,9 +61,8 @@ void ASTC_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& 
 		BufferStream buffer;
 		context.decompress_image(width, height, sc::Image::BasePixelType::RGBA, input, buffer);
 
-		RawImage image((uint8_t*)buffer.data(), width, height, Image::BasePixelType::RGBA, Image::PixelDepth::RGBA8, Image::ColorSpace::Linear);
+		RawImage image((uint8_t*)buffer.data(), width, height, Image::BasePixelType::RGBA, Image::PixelDepth::RGBA8, Image::ColorSpace::sRGB);
 
-		// TODO: Fix Sliding Blocks
 		stbi_flip_vertically_on_write(true);
 		stb::write_image(image, options.output_path.extension().string(), output);
 	}

@@ -6,9 +6,9 @@ void LZHAM_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& o
 	sc::Compressor::LzhamCompressProps props;
 	props.m_dict_size_log2 = 18;
 
-	switch (options.binary.header)
+	switch (options.binary.container)
 	{
-	case CompressionHeader::SC:
+	case FileContainer::SC:
 	{
 		using namespace sc::ScCompression;
 
@@ -20,29 +20,23 @@ void LZHAM_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& o
 	}
 	break;
 
-	case CompressionHeader::LZHAM:
-	{
+	case FileContainer::None:
 		output.write_int('0HZL');
 		output.write_unsigned_int(props.m_dict_size_log2);
 		output.write_unsigned_long(input.length());
-	}
-	case CompressionHeader::None:
-	{
-		sc::Compressor::Lzham context(props);
-		context.compress_stream(input, output);
-	}
-	break;
+		break;
+
 	default:
-		std::cout << "[ERROR] Unsupported header for LZHAM. Supported only None, SC and LZHAM" << std::endl;
+		std::cout << "[ERROR] Unsupported container for LZHAM. Supported only None, SC and LZHAM" << std::endl;
 		break;
 	}
 }
 
 void LZMA_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
-	switch (options.binary.header)
+	switch (options.binary.container)
 	{
-	case CompressionHeader::SC:
+	case FileContainer::SC:
 	{
 		using namespace sc::ScCompression;
 
@@ -54,7 +48,7 @@ void LZMA_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& op
 	}
 	break;
 
-	case CompressionHeader::None:
+	case FileContainer::None:
 	{
 		sc::Compressor::LzmaProps props;
 		props.level = 6;
@@ -69,16 +63,16 @@ void LZMA_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& op
 	}
 	break;
 	default:
-		std::cout << "[ERROR] Unsupported header for LZMA. Supported only None and SC." << std::endl;
+		std::cout << "[ERROR] Unsupported container for LZMA. Supported only None and SC." << std::endl;
 		break;
 	}
 }
 
 void ZSTD_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
-	switch (options.binary.header)
+	switch (options.binary.container)
 	{
-	case CompressionHeader::SC:
+	case FileContainer::SC:
 	{
 		using namespace sc::ScCompression;
 
@@ -90,7 +84,7 @@ void ZSTD_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& op
 	}
 	break;
 
-	case CompressionHeader::None:
+	case FileContainer::None:
 	{
 		sc::Compressor::ZstdProps props;
 
@@ -99,7 +93,7 @@ void ZSTD_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& op
 	}
 	break;
 	default:
-		std::cout << "[ERROR] Unsupported header for ZSTD. Supported only None and SC." << std::endl;
+		std::cout << "[ERROR] Unsupported container for ZSTD. Supported only None and SC." << std::endl;
 		break;
 	}
 }

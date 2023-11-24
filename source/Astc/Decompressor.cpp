@@ -74,7 +74,7 @@ namespace sc
 			decoder_image.data = reinterpret_cast<void**>(&data);
 			decoder_image.data_type = ASTCENC_TYPE_U8;
 
-			astcenc_error status = astcenc_decompress_image(m_context, (uint8_t*)input.data(), input.length(), &decoder_image, &swizzle, 0);
+			astcenc_error status = astcenc_decompress_image(m_context, (uint8_t*)input.data() + input.position(), input.length(), &decoder_image, &swizzle, 0);
 			if (status != ASTCENC_SUCCESS)
 			{
 				free(data);
@@ -83,6 +83,8 @@ namespace sc
 			}
 
 			output.write(data, data_size);
+
+			astcenc_decompress_reset(m_context);
 			free(data);
 		}
 	}

@@ -9,7 +9,7 @@
 void print_usage()
 {
 	print("> Usage: {Operation} {input_file} {output_file} {...options}");
-	print("> Example: c file.bin file_compressed.bin --header=SC --method=zstd");
+	print("> Example: c file.bin file_compressed.bin --container=SC --method=zstd");
 
 	std::cout << std::endl;
 	print("> Operations: ");
@@ -21,7 +21,7 @@ void print_usage()
 	print("> Additional options: ");
 
 	print("General:");
-	print("		" OptionPrefix"header: Sets header type for compression. Possible values - None, SC. Default - None");
+	print("		" OptionPrefix"container: Sets container type for compression. Possible values - None, SC. Default - None");
 	print("		" OptionPrefix"method: Sets compression method by which file will be compressed. Possible values - LZMA, ZSTD, LZHAM, ASTC. Default - ZSTD");
 	print("		" OptionPrefix"format: Defines behavior for some compression modes. Possible values - Binary, Image. Default - Binary");
 	print("		" "Option notes: ");
@@ -82,16 +82,16 @@ bool binary_compressing(sc::Stream& input_stream, sc::Stream& output_stream, Com
 
 bool binary_decompressing(sc::Stream& input_stream, sc::Stream& output_stream, CommandLineOptions& options)
 {
-	if (options.binary.header != CompressionHeader::None)
+	if (options.binary.container != FileContainer::None)
 	{
-		switch (options.binary.header)
+		switch (options.binary.container)
 		{
-		case CompressionHeader::SC:
+		case FileContainer::SC:
 			SC_decompress(input_stream, output_stream, options);
 			break;
 
 		default:
-			std::cout << "[ERROR] Unknown compression header" << std::endl;
+			std::cout << "[ERROR] Unknown compression container" << std::endl;
 			return false;
 		}
 	}

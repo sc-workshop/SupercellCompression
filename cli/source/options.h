@@ -15,10 +15,9 @@ enum class CompressionMethod
 	ASTC
 };
 
-enum class CompressionHeader
+enum class FileContainer
 {
 	None = 0,
-	LZHAM,
 	SC,
 	ASTC
 };
@@ -66,7 +65,7 @@ struct SCOptions
 struct BinaryOptions
 {
 	CompressionMethod method = CompressionMethod::ZSTD;
-	CompressionHeader header = CompressionHeader::None;
+	FileContainer container = FileContainer::None;
 
 	SCOptions sc;
 	LzmaOptions lzma;
