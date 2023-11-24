@@ -95,5 +95,29 @@ void ZSTD_compress(sc::Stream& input, sc::Stream& output, CommandLineOptions& op
 	default:
 		std::cout << "[ERROR] Unsupported container for ZSTD. Supported only None and SC." << std::endl;
 		break;
+	};
+}
+
+bool binary_compressing(sc::Stream& input_stream, sc::Stream& output_stream, CommandLineOptions& options)
+{
+	switch (options.binary.method)
+	{
+	case CompressionMethod::LZMA:
+		LZMA_compress(input_stream, output_stream, options);
+		break;
+
+	case CompressionMethod::ZSTD:
+		ZSTD_compress(input_stream, output_stream, options);
+		break;
+
+	case CompressionMethod::LZHAM:
+		LZHAM_compress(input_stream, output_stream, options);
+		break;
+
+	default:
+		std::cout << "[ERROR] Unknown compression method" << std::endl;
+		return false;
 	}
+
+	return true;
 }

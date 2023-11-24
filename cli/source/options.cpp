@@ -2,6 +2,28 @@
 
 CommandLineOptions::CommandLineOptions(int argc, char* argv[])
 {
+#pragma region Basic Settings
+	{
+		std::string param = get_option(argc, argv, OptionPrefix "format");
+		if (!param.empty())
+		{
+			make_lowercase(param);
+
+			if (param == "binary")
+			{
+				file_format = FileFormat::Binary;
+			}
+			else if (param == "image")
+			{
+				file_format = FileFormat::Image;
+			}
+			else
+			{
+				std::cout << "[WARNING] An unknown type of file format is specified. Instead, default is used - Binary" << std::endl;
+			}
+		}
+	}
+
 	{
 		std::string operation_name = std::string(argv[1]);
 		make_lowercase(operation_name);
@@ -29,7 +51,9 @@ CommandLineOptions::CommandLineOptions(int argc, char* argv[])
 	{
 		threads = get_int_option(argc, argv, OptionPrefix "threads");
 	}
+#pragma endregion
 
+#pragma region Binary Settings
 	{
 		std::string container_name = get_option(argc, argv, OptionPrefix "container");
 		if (!container_name.empty())
@@ -50,7 +74,7 @@ CommandLineOptions::CommandLineOptions(int argc, char* argv[])
 			}
 			else
 			{
-				std::cout << "[WARNING] An unknown type of container is specified. Instead, default is used - SC" << std::endl;
+				std::cout << "[WARNING] An unknown type of container is specified. Instead, default is used - None" << std::endl;
 			}
 		}
 	}
@@ -83,29 +107,20 @@ CommandLineOptions::CommandLineOptions(int argc, char* argv[])
 			}
 		}
 	}
+#pragma endregion
 
-	{
-		std::string param = get_option(argc, argv, OptionPrefix "format");
-		if (!param.empty())
-		{
-			make_lowercase(param);
+#pragma region Image Settings
+	image.flip_images = get_bool_option(argc, argv, OptionPrefix "imageVerticalFlip");
+	image.save_mip_maps = get_bool_option(argc, argv, OptionPrefix "imageSaveMips");
 
-			if (param == "binary")
-			{
-				file_format = FileFormat::Binary;
-			}
-			else if (param == "image")
-			{
-				file_format = FileFormat::Image;
-			}
-			else
-			{
-				std::cout << "[WARNING] An unknown type of file format is specified. Instead, default is used - Binary" << std::endl;
-			}
-		}
-	}
+#pragma endregion
 
-	binary.lzma.use_long_unpacked_length = get_bool_option(argc, argv, OptionPrefix "longUnpackedLength");
+#pragma region SC Props
+	binary.sc.print_metadata = is_option_in(argc, argv, OptionPrefix "print_sc_metadata");
+#pragma endregion
 
-	binary.sc.print_metadata = is_option_in(argc, argv, OptionPrefix "print_metadata");
+#pragma region LZMA Props
+	binary.lzma.use_long_unpacked_length = get_bool_option(argc, argv, OptionPrefix "lzmaLongUnpackedLength");
+
+#pragma endregion
 }

@@ -11,7 +11,7 @@ namespace sc
 {
 	namespace Compressor
 	{
-		void Astc::compress(Image& image, AstcCompressProps props, Stream& output)
+		void Astc::write(Image& image, AstcCompressProps props, Stream& output)
 		{
 			output.write(AstcFileIdentifier, sizeof(AstcFileIdentifier));
 
@@ -20,11 +20,14 @@ namespace sc
 			output.write_unsigned_byte(props.blocks_y);
 			output.write_unsigned_byte(1);
 
+			uint32_t width = image.width();
+			uint32_t height = image.height();
+			uint32_t z_dimension = 1;
+
 			// '24-bit' integers for width / height
-			output.write_unsigned_short(image.width());
-			output.write_unsigned_byte(0);
-			output.write_unsigned_short(image.height());
-			output.write_unsigned_byte(0);
+			output.write(&width, 3);
+			output.write(&height, 3);
+			output.write(&z_dimension, 3);
 
 			Astc context(props);
 			context.compress_image(image, output);
@@ -32,13 +35,22 @@ namespace sc
 
 		Astc::Astc(AstcCompressProps& props)
 		{
-			astcenc_config config;
-			astcenc_error status = astcenc_config_init(
+			m_config = new astcenc_config();
+			astcenc_error status;
+			status = astcenc_config_init(
 				props.profile,
 				props.blocks_x, props.blocks_y, 1,
-				float(props.quality), 0, &config
+				float(props.quality), 0, m_config
 			);
+
+			status = astcenc_context_alloc(m_config, props.threads_count, &m_context);
 		};
+
+		Astc::~Astc()
+		{
+			astcenc_context_free(m_context);
+			delete m_config;
+		}
 
 		void Astc::compress_image(Image& image, Stream& output)
 		{
@@ -49,11 +61,13 @@ namespace sc
 
 			astcenc_swizzle swizzle = get_astc_swizzle(image.base_type());
 
+			uint8_t* image_data = image.data();
+
 			astcenc_image encoder_image{};
 			encoder_image.dim_x = image.width();
 			encoder_image.dim_y = image.height();
 			encoder_image.dim_z = 1;
-			encoder_image.data = reinterpret_cast<void**>(image.data());
+			encoder_image.data = reinterpret_cast<void**>(&image_data);
 			encoder_image.data_type = ASTCENC_TYPE_U8;
 
 			const unsigned int& blocks_x = m_context->context.config.block_x;

@@ -37,7 +37,7 @@ enum class Operations
 	Convert
 };
 
-//				<--------------- Image -------------->
+#pragma region Images / Textures
 
 struct KhronosOptions
 {
@@ -47,9 +47,13 @@ struct KhronosOptions
 struct ImageOptions
 {
 	bool save_mip_maps = false;
+	bool flip_images = false;
+
 	KhronosOptions khronos;
 };
+#pragma endregion
 
+#pragma region Binary
 //				<--------------- Binary -------------->
 
 struct LzmaOptions
@@ -62,14 +66,22 @@ struct SCOptions
 	bool print_metadata = false;
 };
 
+struct ASTCOptions
+{
+	int x_blocks = 4;
+	int y_blocks = 4;
+};
+
 struct BinaryOptions
 {
-	CompressionMethod method = CompressionMethod::ZSTD;
+	CompressionMethod method = CompressionMethod::LZMA;
 	FileContainer container = FileContainer::None;
 
 	SCOptions sc;
 	LzmaOptions lzma;
+	ASTCOptions astc;
 };
+#pragma endregion
 
 // Helper class to parse options from command line
 struct CommandLineOptions

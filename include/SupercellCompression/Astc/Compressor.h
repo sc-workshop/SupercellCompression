@@ -36,11 +36,11 @@ namespace sc
 			/// <param name="image"></param>
 			/// <param name="props"></param>
 			/// <param name="output"></param>
-			static void compress(Image& image, AstcCompressProps props, Stream& output);
+			static void write(Image& image, AstcCompressProps props, Stream& output);
 
 		public:
 			Astc(AstcCompressProps& props);
-			~Astc() = default;
+			virtual ~Astc();
 
 			/// <summary>
 			/// Compress image data with ASTC codec
@@ -51,6 +51,7 @@ namespace sc
 
 		private:
 			astcenc_context* m_context;
+			astcenc_config* m_config;
 		};
 	}
 }
