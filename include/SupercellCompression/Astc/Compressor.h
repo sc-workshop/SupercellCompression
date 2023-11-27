@@ -47,7 +47,7 @@ namespace sc
 			/// </summary>
 			/// <param name="image"></param>
 			/// <param name="output"></param>
-			virtual void compress_image(Image& image, Stream& output);
+			virtual void compress_image(uint16_t widht, uint16_t height, Image::BasePixelType type, Stream& input, Stream& output);
 
 		private:
 			astcenc_context* m_context;

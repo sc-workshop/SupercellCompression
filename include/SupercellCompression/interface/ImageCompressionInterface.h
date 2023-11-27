@@ -8,6 +8,6 @@ namespace sc
 	class ImageCompressionInterface
 	{
 	public:
-		virtual void compress_image(Image& image, Stream& output) = 0;
+		virtual void compress_image(uint16_t widht, uint16_t height, Image::BasePixelType type, Stream& input, Stream& output) = 0;
 	};
 }

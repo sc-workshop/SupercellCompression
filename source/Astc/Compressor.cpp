@@ -13,6 +13,11 @@ namespace sc
 	{
 		void Astc::write(Image& image, AstcCompressProps props, Stream& output)
 		{
+			if (image.is_compressed())
+			{
+				throw ImageAlreadyCompressedException();
+			}
+
 			output.write(AstcFileIdentifier, sizeof(AstcFileIdentifier));
 
 			// x y z blocks
@@ -30,7 +35,13 @@ namespace sc
 			output.write(&z_dimension, 3);
 
 			Astc context(props);
-			context.compress_image(image, output);
+			context.compress_image(
+				image.width(),
+				image.height(),
+				image.base_type(),
+				MemoryStream(image.data(), image.data_length()),
+				output
+			);
 		}
 
 		Astc::Astc(AstcCompressProps& props)
@@ -52,22 +63,17 @@ namespace sc
 			delete m_config;
 		}
 
-		void Astc::compress_image(Image& image, Stream& output)
+		void Astc::compress_image(uint16_t widht, uint16_t height, Image::BasePixelType type, Stream& input, Stream& output)
 		{
-			if (image.is_compressed())
-			{
-				throw ImageAlreadyCompressedException();
-			}
+			astcenc_swizzle swizzle = get_astc_swizzle(type);
 
-			astcenc_swizzle swizzle = get_astc_swizzle(image.base_type());
-
-			uint8_t* image_data = image.data();
+			uint8_t* data = (uint8_t*)input.data() + input.position();
 
 			astcenc_image encoder_image{};
-			encoder_image.dim_x = image.width();
-			encoder_image.dim_y = image.height();
+			encoder_image.dim_x = widht;
+			encoder_image.dim_y = height;
 			encoder_image.dim_z = 1;
-			encoder_image.data = reinterpret_cast<void**>(&image_data);
+			encoder_image.data = reinterpret_cast<void**>(&data);
 			encoder_image.data_type = ASTCENC_TYPE_U8;
 
 			const unsigned int& blocks_x = m_context->context.config.block_x;
