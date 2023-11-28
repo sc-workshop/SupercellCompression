@@ -1,6 +1,7 @@
 #pragma once
 #include "options.h"
 #include "io/stream.h"
+#include "io/file_stream.h"
 
 #include <chrono>
 using namespace std::chrono;
@@ -23,6 +24,6 @@ void print_time(time_point<high_resolution_clock> start, time_point<high_resolut
 
 bool binary_compressing(sc::Stream& input_stream, sc::Stream& output_stream, CommandLineOptions& options);
 bool binary_decompressing(sc::Stream& input_stream, sc::Stream& output_stream, CommandLineOptions& options);
-bool image_convert(sc::Stream& input_stream, sc::Stream& output_stream, CommandLineOptions& options);
+bool image_convert(sc::Stream& input_stream, CommandLineOptions& options);
 
 int main(int argc, char* argv[]);

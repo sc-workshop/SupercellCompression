@@ -142,7 +142,6 @@ int main(int argc, char* argv[])
 			operation_describe = "Convert";
 
 			sc::BufferStream input_stream;
-			sc::BufferStream output_stream;
 
 			// Loading file to memory
 			{
@@ -158,7 +157,7 @@ int main(int argc, char* argv[])
 			switch (options.file_format)
 			{
 			case FileFormat::Image:
-				result = image_convert(input_stream, output_stream, options);
+				result = image_convert(input_stream, options);
 				break;
 			default:
 				print("[ERROR] Selected file format is not supported in convert option. Supported formats: Image");
@@ -171,10 +170,10 @@ int main(int argc, char* argv[])
 			}
 
 			// Writing memory to file
-			{
-				sc::OutputFileStream output_file(options.output_path);
-				output_file.write(output_stream.data(), output_stream.length());
-			}
+			// {
+			// 	sc::OutputFileStream output_file(options.output_path);
+			// 	output_file.write(output_stream.data(), output_stream.length());
+			// }
 		}
 		else
 		{

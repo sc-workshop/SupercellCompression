@@ -1,10 +1,37 @@
 #include "main.h"
 #include "stb/stb.h"
 
+#include <vector>
+using std::vector;
+
 using namespace sc;
 
 #pragma region ASTC
 #include "SupercellCompression/Astc.h"
+
+void load_khronos(Stream& stream, vector<RawImage*>& output, CommandLineOptions& options)
+{
+	KhronosTexture texture(stream);
+
+	uint32_t mips_count = texture.level_count();
+	output.reserve(mips_count);
+	for (uint32_t level_index = 0; mips_count > level_index; level_index++)
+	{
+		RawImage* image = new RawImage(
+			texture.width() / (uint16_t)(pow(2, level_index)),
+			texture.height() / (uint16_t)(pow(2, level_index)),
+			texture.base_type(),
+			texture.depth()
+		);
+
+		texture.decompress_data(
+			MemoryStream(image->data(), image->data_length()), level_index
+		);
+
+		output.push_back(image);
+	}
+}
+
 void load_astc(Stream& stream, RawImage** image, CommandLineOptions& options)
 {
 	uint16_t width;
@@ -45,9 +72,9 @@ void write_astc(Stream& stream, RawImage& image, CommandLineOptions& options)
 }
 #pragma endregion
 
-bool image_convert(Stream& input_stream, Stream& output_stream, CommandLineOptions& options)
+bool image_convert(Stream& input_stream, CommandLineOptions& options)
 {
-	RawImage* image = nullptr;
+	vector<RawImage*> images;
 
 #pragma region Image Loading
 	{
@@ -61,11 +88,21 @@ bool image_convert(Stream& input_stream, Stream& output_stream, CommandLineOptio
 			extension == ".bmp" ||
 			extension == ".tga")
 		{
+			RawImage* image = nullptr;
 			stb::load_image(input_stream, &image);
+
+			images.push_back(image);
 		}
 		else if (extension == ".astc")
 		{
+			RawImage* image = nullptr;
 			load_astc(input_stream, &image, options);
+
+			images.push_back(image);
+		}
+		else if (extension == ".ktx")
+		{
+			load_khronos(input_stream, images, options);
 		}
 		else
 		{
@@ -75,34 +112,66 @@ bool image_convert(Stream& input_stream, Stream& output_stream, CommandLineOptio
 	}
 #pragma endregion
 
-	if (image == nullptr)
-	{
-		print("[ERROR] Failed to load image");
-		return false;
-	}
-
 #pragma region Image Saving
 	{
 		std::string extension = options.output_path.extension().string();
 		make_lowercase(extension);
 
-		if (extension == ".png" ||
-			extension == ".jpeg" ||
-			extension == ".jpg" ||
-			extension == ".psd" ||
-			extension == ".bmp" ||
-			extension == ".tga")
+		for (uint32_t i = 0; images.size() > i; i++)
 		{
-			stb::write_image(*image, extension, output_stream);
+			if (images[i] == nullptr)
+			{
+				print("[ERROR] Failed to load image " << std::to_string(i));
+				continue;
+			}
+
+			RawImage& image = *images.at(i);
+
+			fs::path output_path = options.output_path;
+			if (!options.image.save_mip_maps && i >= 1)
+			{
+				break;
+			}
+
+			if (options.image.save_mip_maps)
+			{
+				output_path = fs::path(
+					output_path.parent_path() /
+					output_path.stem()
+					.concat("_")
+					.concat(std::to_string(i))
+					.concat(extension)
+				);
+			}
+
+			Stream& output_stream = OutputFileStream(output_path);
+
+			if (extension == ".png" ||
+				extension == ".jpeg" ||
+				extension == ".jpg" ||
+				extension == ".psd" ||
+				extension == ".bmp" ||
+				extension == ".tga")
+			{
+				stb::write_image(image, extension, output_stream);
+			}
+			else if (extension == ".astc")
+			{
+				write_astc(output_stream, image, options);
+			}
+			else
+			{
+				print("[ERROR] Unknwon output file extension: " << extension);
+				break;
+			}
+
+			delete images.at(i);
+			images[i] = nullptr;
 		}
-		else if (extension == ".astc")
+
+		for (RawImage* image : images)
 		{
-			write_astc(output_stream, *image, options);
-		}
-		else
-		{
-			print("[ERROR] Unknwon output file extension: " << extension);
-			return false;
+			if (image != nullptr) delete image;
 		}
 	}
 #pragma endregion

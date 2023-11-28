@@ -67,13 +67,13 @@ namespace sc
 		{
 			astcenc_swizzle swizzle = get_astc_swizzle(type);
 
-			uint8_t* data = (uint8_t*)input.data() + input.position();
+			uint8_t* image_buffer = (uint8_t*)input.data() + input.position();
 
 			astcenc_image encoder_image{};
 			encoder_image.dim_x = widht;
 			encoder_image.dim_y = height;
 			encoder_image.dim_z = 1;
-			encoder_image.data = reinterpret_cast<void**>(&data);
+			encoder_image.data = (void**)&image_buffer;
 			encoder_image.data_type = ASTCENC_TYPE_U8;
 
 			const unsigned int& blocks_x = m_context->context.config.block_x;

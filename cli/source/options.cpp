@@ -110,8 +110,8 @@ CommandLineOptions::CommandLineOptions(int argc, char* argv[])
 #pragma endregion
 
 #pragma region Image Settings
-	image.flip_images = get_bool_option(argc, argv, OptionPrefix "imageVerticalFlip");
-	image.save_mip_maps = get_bool_option(argc, argv, OptionPrefix "imageSaveMips");
+	image.flip_images = is_option_in(argc, argv, OptionPrefix "imageVerticalFlip");
+	image.save_mip_maps = is_option_in(argc, argv, OptionPrefix "imageSaveMips");
 
 #pragma endregion
 
@@ -120,7 +120,7 @@ CommandLineOptions::CommandLineOptions(int argc, char* argv[])
 #pragma endregion
 
 #pragma region LZMA Props
-	binary.lzma.use_long_unpacked_length = get_bool_option(argc, argv, OptionPrefix "lzmaLongUnpackedLength");
+	binary.lzma.use_long_unpacked_length = is_option_in(argc, argv, OptionPrefix "lzmaLongUnpackedLength");
 
 #pragma endregion
 }
