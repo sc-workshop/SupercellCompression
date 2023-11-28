@@ -65,7 +65,6 @@ namespace sc
 		};
 
 	public:
-
 		/// <summary>
 		/// Reads ktx1 file from stream
 		/// </summary>
@@ -87,6 +86,8 @@ namespace sc
 		/// <param name="format"></param>
 		KhronosTexture(RawImage& image, glInternalFormat format);
 
+		~KhronosTexture();
+
 	public:
 		virtual BasePixelType base_type() const;
 
@@ -96,11 +97,11 @@ namespace sc
 
 		virtual size_t data_length() const;
 
-		size_t data_length(uint32_t level_index = 0) const;
+		size_t data_length(uint32_t level_index) const;
 
 		virtual uint8_t* data() const;
 
-		uint8_t* data(uint32_t level_index = 0) const;
+		const BufferStream* data(uint32_t level_index) const;
 
 		virtual bool is_compressed() const;
 
@@ -108,20 +109,31 @@ namespace sc
 
 		virtual size_t decompressed_data_length();
 
-		size_t decompressed_data_length(uint32_t level = 1);
+		uint32_t level_count() const;
 
-		virtual void decompress_data(Stream& output);
+		/// <summary>
+		///
+		/// </summary>
+		/// <param name="level">Level number</param>
+		/// <returns></returns>
+		size_t decompressed_data_length(uint32_t level_index);
+
+	public:
+		static Image::PixelDepth format_depth(glInternalFormat format);
+		static Image::BasePixelType format_type(glFormat format);
+		static Image::ColorSpace format_colorspace(glFormat format);
+		static bool format_compression(glInternalFormat format);
+		static KhronosTextureCompression format_compression_type(glInternalFormat format);
 
 	public:
 		virtual void write(Stream& buffer);
 
-		void decompress_data(Stream& output, uint32_t level_index = 0);
+		virtual void decompress_data(Stream& output);
+		void decompress_data(Stream& output, uint32_t level_index);
 
-		/// <summary>
-		/// Input data must clearly correspond to properties of current object such as width, height, depth
-		/// </summary>
-		/// <param name="stream"></param>
-		//void compress_data(Stream& stream);
+		void set_level_data(Stream& data, Image::PixelDepth data_format, uint32_t level_index);
+
+		void reset_level_data(uint32_t level_index);
 
 	private:
 		/// <summary>
@@ -135,7 +147,9 @@ namespace sc
 
 #pragma region
 		static void get_astc_blocks(glInternalFormat format, uint32_t& x, uint32_t& y, uint32_t& z);
-		void decompress_astc(Stream& output, uint32_t level_index = 0);
+		void decompress_astc(Stream& input, Stream& output, uint16_t width, uint16_t height);
+		void compress_astc(Stream& input, Stream& output);
+
 #pragma endregion ASTC
 
 	private:
@@ -143,6 +157,6 @@ namespace sc
 		glFormat m_format;
 		glInternalFormat m_internal_format;
 
-		std::vector<MemoryStream*> m_levels;
+		std::vector<BufferStream*> m_levels;
 	};
 }

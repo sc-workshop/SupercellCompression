@@ -2,7 +2,7 @@
 
 namespace sc
 {
-#pragma region
+#pragma region Constructors
 	KhronosTexture::KhronosTexture(Stream& buffer)
 	{
 		uint32_t levels_count = read_header(buffer);
@@ -12,7 +12,7 @@ namespace sc
 		{
 			uint32_t level_length = buffer.read_unsigned_int();
 
-			m_levels[level_index] = new MemoryStream(level_length);
+			m_levels[level_index] = new BufferStream(level_length);
 			buffer.read(m_levels[level_index]->data(), level_length);
 		}
 	}
@@ -30,9 +30,8 @@ namespace sc
 			m_type = glType::COMPRESSED;
 		}
 
-		MemoryStream* stream = new MemoryStream(buffer_size);
-		stream->write(buffer, buffer_size);
-		stream->seek(0);
+		BufferStream* stream = new BufferStream(buffer_size);
+		sc::memcopy(buffer, stream->data(), buffer_size);
 
 		m_levels.push_back(stream);
 	}
@@ -43,48 +42,32 @@ namespace sc
 		m_width = image.width();
 		m_height = image.height();
 
-		uint8_t* buffer = nullptr;
-
-		// Converting Depth
-		Image::PixelDepth source_depth = image.depth();
-		Image::PixelDepth destination_depth = depth();
-
-		if (source_depth != destination_depth)
-		{
-			buffer = memalloc(Image::calculate_image_length(m_width, m_height, destination_depth));
-			Image::remap(
-				image.data(), buffer,
-				m_width, m_height,
-				source_depth, destination_depth
-			);
-		}
-
 		if (is_compressed())
 		{
 			m_type = glType::COMPRESSED;
-			// TODO: Image compression yeah
 		}
 		else
 		{
 			m_type = glType::GL_UNSIGNED_BYTE;
-
-			size_t image_length = Image::calculate_image_length(m_width, m_height, depth());
-
-			MemoryStream* stream = new MemoryStream(image_length);
-			stream->write(buffer ? buffer : image.data(), image_length);
-			stream->seek(0);
-
-			m_levels.push_back(stream);
 		}
 
-		if (buffer)
+		set_level_data(
+			MemoryStream(image.data(), image.data_length()),
+			image.depth(),
+			0
+		);
+	}
+
+	KhronosTexture::~KhronosTexture()
+	{
+		for (BufferStream* level : m_levels)
 		{
-			free(buffer);
+			if (level != nullptr) delete level;
 		}
 	}
-#pragma endregion Constructors
+#pragma endregion
 
-#pragma region
+#pragma region Functions
 	void KhronosTexture::write(Stream& buffer)
 	{
 		bool is_compressed = m_type == glType::COMPRESSED;
@@ -136,8 +119,10 @@ namespace sc
 		// bytesOfKeyValueData
 		buffer.write_unsigned_int(0);
 
-		for (MemoryStream* level : m_levels)
+		for (BufferStream* level : m_levels)
 		{
+			if (level == nullptr) continue;
+
 			uint32_t image_length = static_cast<uint32_t>(level->length());
 			buffer.write_unsigned_int(image_length);
 			buffer.write(level->data(), image_length);
@@ -147,11 +132,16 @@ namespace sc
 	void KhronosTexture::decompress_data(Stream& output, uint32_t level_index)
 	{
 		if (level_index >= m_levels.size()) level_index = static_cast<uint32_t>(m_levels.size()) - 1;
+		BufferStream* buffer = m_levels[level_index];
+		if (buffer == nullptr) return;
+
+		uint16_t level_width = m_width / (uint16_t)pow(2, level_index);
+		uint16_t level_height = m_height / (uint16_t)pow(2, level_index);
 
 		switch (compression_type())
 		{
 		case KhronosTextureCompression::ASTC:
-			decompress_astc(output, level_index);
+			decompress_astc(*buffer, output, level_width, level_height);
 			break;
 
 		default:
@@ -159,56 +149,72 @@ namespace sc
 			break;
 		}
 	}
-#pragma endregion Functions
 
-#pragma region
-	Image::BasePixelType KhronosTexture::base_type() const
+	void KhronosTexture::set_level_data(Stream& stream, Image::PixelDepth source_depth, uint32_t level_index)
 	{
-		switch (m_format)
+		// First, check if level index is ok
+		// If index out of bound - create new buffer
+		if (level_index >= m_levels.size())
 		{
-		case sc::KhronosTexture::glFormat::GL_R:
-			return BasePixelType::L;
+			level_index = static_cast<uint32_t>(m_levels.size());
+			m_levels.resize(m_levels.size() + 1);
+		};
 
-		case sc::KhronosTexture::glFormat::GL_RG:
-			return BasePixelType::LA;
+		// Free level buffer before some changes if it exist
+		if (m_levels[level_index] != nullptr)
+		{
+			delete m_levels[level_index];
+		}
 
-		case sc::KhronosTexture::glFormat::GL_SRGB:
-		case sc::KhronosTexture::glFormat::GL_RGB:
-			return BasePixelType::RGB;
+		// Level final data buffer
+		BufferStream* buffer = new BufferStream();
 
-		case sc::KhronosTexture::glFormat::GL_SRGB_ALPHA:
-		case sc::KhronosTexture::glFormat::GL_RGBA:
-			return BasePixelType::RGBA;
+		uint8_t* image_buffer = nullptr;
+		size_t image_buffer_size = 0;
+
+		// Second, we need to convert data base type to current texture type
+		Image::PixelDepth destination_depth = depth();
+
+		if (source_depth != destination_depth)
+		{
+			image_buffer_size = Image::calculate_image_length(m_width, m_height, destination_depth);
+			image_buffer = memalloc(image_buffer_size);
+			Image::remap(
+				(uint8_t*)stream.data(), image_buffer,
+				m_width, m_height,
+				source_depth, destination_depth
+			);
+		}
+
+		MemoryStream input_image(
+			image_buffer ? image_buffer : (uint8_t*)stream.data(),
+			image_buffer ? image_buffer_size : stream.length()
+		);
+
+		switch (compression_type())
+		{
+		case KhronosTextureCompression::ASTC:
+			compress_astc(input_image, *buffer);
+			break;
 
 		default:
-			assert(0 && "Unknown glFormat");
+			buffer->resize(input_image.length());
+			sc::memcopy(
+				image_buffer ? image_buffer : (uint8_t*)stream.data(),
+				buffer->data(),
+				input_image.length()
+			);
 			break;
 		}
+
+		m_levels[level_index] = buffer;
 	}
+#pragma endregion
 
-	Image::ColorSpace KhronosTexture::colorspace() const
+#pragma region Static Functions
+	Image::PixelDepth KhronosTexture::format_depth(glInternalFormat format)
 	{
-		switch (m_format)
-		{
-		case sc::KhronosTexture::glFormat::GL_RGBA:
-		case sc::KhronosTexture::glFormat::GL_RGB:
-		case sc::KhronosTexture::glFormat::GL_RG:
-		case sc::KhronosTexture::glFormat::GL_R:
-			return ColorSpace::Linear;
-
-		case sc::KhronosTexture::glFormat::GL_SRGB:
-		case sc::KhronosTexture::glFormat::GL_SRGB_ALPHA:
-			return ColorSpace::sRGB;
-
-		default:
-			assert(0 && "Unknown glFormat");
-			break;
-		}
-	}
-
-	Image::PixelDepth KhronosTexture::depth() const
-	{
-		switch (m_internal_format)
+		switch (format)
 		{
 		case sc::KhronosTexture::glInternalFormat::GL_RGBA8:
 			return PixelDepth::RGBA8;
@@ -227,8 +233,112 @@ namespace sc
 
 		default:
 			assert(0 && "Unknown glInternalFormat");
-			break;
+			return PixelDepth::RGBA8;
 		}
+	}
+
+	Image::BasePixelType KhronosTexture::format_type(glFormat format)
+	{
+		switch (format)
+		{
+		case sc::KhronosTexture::glFormat::GL_R:
+			return BasePixelType::L;
+
+		case sc::KhronosTexture::glFormat::GL_RG:
+			return BasePixelType::LA;
+
+		case sc::KhronosTexture::glFormat::GL_SRGB:
+		case sc::KhronosTexture::glFormat::GL_RGB:
+			return BasePixelType::RGB;
+
+		case sc::KhronosTexture::glFormat::GL_SRGB_ALPHA:
+		case sc::KhronosTexture::glFormat::GL_RGBA:
+			return BasePixelType::RGBA;
+
+		default:
+			assert(0 && "Unknown glFormat");
+			return BasePixelType::RGBA;
+		}
+	}
+
+	Image::ColorSpace KhronosTexture::format_colorspace(glFormat format)
+	{
+		switch (format)
+		{
+		case sc::KhronosTexture::glFormat::GL_RGBA:
+		case sc::KhronosTexture::glFormat::GL_RGB:
+		case sc::KhronosTexture::glFormat::GL_RG:
+		case sc::KhronosTexture::glFormat::GL_R:
+			return ColorSpace::Linear;
+
+		case sc::KhronosTexture::glFormat::GL_SRGB:
+		case sc::KhronosTexture::glFormat::GL_SRGB_ALPHA:
+			return ColorSpace::sRGB;
+
+		default:
+			assert(0 && "Unknown glFormat");
+			return ColorSpace::Linear;
+		}
+	}
+
+	bool KhronosTexture::format_compression(glInternalFormat format)
+	{
+		switch (format)
+		{
+		case sc::KhronosTexture::glInternalFormat::GL_RGBA8:
+		case sc::KhronosTexture::glInternalFormat::GL_RGB8:
+		case sc::KhronosTexture::glInternalFormat::GL_LUMINANCE:
+		case sc::KhronosTexture::glInternalFormat::GL_LUMINANCE_ALPHA:
+			return false;
+
+		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4:
+		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_5x5:
+		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_6x6:
+		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_8x8:
+			return true;
+
+		default:
+			assert(0 && "Unknown glInternalFormat");
+			return false;
+		}
+	}
+
+	KhronosTextureCompression KhronosTexture::format_compression_type(glInternalFormat format)
+	{
+		switch (format)
+		{
+		case sc::KhronosTexture::glInternalFormat::GL_RGBA8:
+		case sc::KhronosTexture::glInternalFormat::GL_RGB8:
+		case sc::KhronosTexture::glInternalFormat::GL_LUMINANCE:
+		case sc::KhronosTexture::glInternalFormat::GL_LUMINANCE_ALPHA:
+			return KhronosTextureCompression::None;
+
+		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4:
+		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_5x5:
+		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_6x6:
+		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_8x8:
+			return KhronosTextureCompression::ASTC;
+		default:
+			assert(0 && "Unknown glInternalFormat");
+			return KhronosTextureCompression::None;
+		}
+	}
+#pragma endregion
+
+#pragma region Getters/Setters
+	Image::BasePixelType KhronosTexture::base_type() const
+	{
+		return KhronosTexture::format_type(m_format);
+	}
+
+	Image::ColorSpace KhronosTexture::colorspace() const
+	{
+		return KhronosTexture::format_colorspace(m_format);
+	}
+
+	Image::PixelDepth KhronosTexture::depth() const
+	{
+		return KhronosTexture::format_depth(m_internal_format);
 	};
 
 	size_t KhronosTexture::data_length() const
@@ -245,55 +355,28 @@ namespace sc
 
 	uint8_t* KhronosTexture::data() const
 	{
-		return data(0);
+		auto buffer = data(0);
+
+		if (buffer != nullptr) return (uint8_t*)buffer->data();
+
+		return nullptr;
 	}
 
-	uint8_t* KhronosTexture::data(uint32_t level_index) const
+	const BufferStream* KhronosTexture::data(uint32_t level_index) const
 	{
 		if (level_index >= m_levels.size()) level_index = static_cast<uint32_t>(m_levels.size()) - 1;
 
-		return (uint8_t*)m_levels[level_index]->data();
+		return m_levels[level_index];
 	}
 
 	bool KhronosTexture::is_compressed() const
 	{
-		switch (m_internal_format)
-		{
-		case sc::KhronosTexture::glInternalFormat::GL_RGBA8:
-		case sc::KhronosTexture::glInternalFormat::GL_RGB8:
-		case sc::KhronosTexture::glInternalFormat::GL_LUMINANCE:
-		case sc::KhronosTexture::glInternalFormat::GL_LUMINANCE_ALPHA:
-			return false;
-
-		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4:
-		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_5x5:
-		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_6x6:
-		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_8x8:
-			return true;
-
-		default:
-			break;
-		}
+		return KhronosTexture::format_compression(m_internal_format);
 	}
 
 	KhronosTextureCompression KhronosTexture::compression_type()
 	{
-		switch (m_internal_format)
-		{
-		case sc::KhronosTexture::glInternalFormat::GL_RGBA8:
-		case sc::KhronosTexture::glInternalFormat::GL_RGB8:
-		case sc::KhronosTexture::glInternalFormat::GL_LUMINANCE:
-		case sc::KhronosTexture::glInternalFormat::GL_LUMINANCE_ALPHA:
-			return KhronosTextureCompression::None;
-
-		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_4x4:
-		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_5x5:
-		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_6x6:
-		case sc::KhronosTexture::glInternalFormat::GL_COMPRESSED_RGBA_ASTC_8x8:
-			return KhronosTextureCompression::ASTC;
-		default:
-			break;
-		}
+		return KhronosTexture::format_compression_type(m_internal_format);
 	}
 
 	size_t KhronosTexture::decompressed_data_length()
@@ -301,18 +384,27 @@ namespace sc
 		return decompressed_data_length(0);
 	}
 
-	size_t KhronosTexture::decompressed_data_length(uint32_t level)
+	size_t KhronosTexture::decompressed_data_length(uint32_t level_index)
 	{
-		return Image::calculate_image_length(m_width / level, m_height / level, depth());
+		return Image::calculate_image_length(
+			m_width / (uint16_t)(pow(2, level_index)),
+			m_height / (uint16_t)(pow(2, level_index)),
+			depth()
+		);
 	}
 
 	void KhronosTexture::decompress_data(Stream& output)
 	{
 		return decompress_data(output, 0);
 	}
-#pragma endregion Getters/Setters
 
-#pragma region
+	uint32_t KhronosTexture::level_count() const
+	{
+		return static_cast<uint32_t>(m_levels.size());
+	}
+#pragma endregion
+
+#pragma region Private Functions
 	uint32_t KhronosTexture::read_header(Stream& buffer)
 	{
 		for (uint8_t i = 0; sizeof(KtxFileIdentifier) > i; i++)
@@ -386,10 +478,11 @@ namespace sc
 			return glFormat::GL_R;
 
 		default:
-			break;
+			assert(0 && "Unknown glInternalFormat");
+			return glFormat::GL_RGBA;
 		}
 	};
-#pragma endregion Private Functions
+#pragma endregion
 
 #pragma region
 	void KhronosTexture::get_astc_blocks(glInternalFormat format, uint32_t& x, uint32_t& y, uint32_t& z)
@@ -414,7 +507,7 @@ namespace sc
 		}
 	}
 
-	void KhronosTexture::decompress_astc(Stream& output, uint32_t level_index)
+	void KhronosTexture::decompress_astc(Stream& input, Stream& output, uint16_t width, uint16_t height)
 	{
 		uint32_t blocks_x;
 		uint32_t blocks_y;
@@ -426,13 +519,26 @@ namespace sc
 		props.blocks_y = blocks_y;
 		props.profile = colorspace() == ColorSpace::Linear ? ASTCENC_PRF_LDR : ASTCENC_PRF_LDR_SRGB;
 
-		MemoryStream* buffer = m_levels[level_index];
-
 		Decompressor::Astc context(props);
 		context.decompress_image(
-			m_width, m_height, base_type(),
-			*buffer, output
+			width, height, Image::BasePixelType::RGBA,
+			input, output
 		);
+	}
+
+	void KhronosTexture::compress_astc(Stream& input, Stream& output)
+	{
+		uint32_t blocks_x;
+		uint32_t blocks_y;
+		uint32_t blocks_z;
+		get_astc_blocks(m_internal_format, blocks_x, blocks_y, blocks_z);
+
+		Compressor::AstcCompressProps props;
+		props.blocks_x = blocks_x;
+		props.blocks_y = blocks_y;
+
+		Compressor::Astc context(props);
+		context.compress_image(m_width, m_height, Image::BasePixelType::RGBA, input, output);
 	}
 #pragma endregion ASTC Compression
 }
