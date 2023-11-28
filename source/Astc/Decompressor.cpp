@@ -1,17 +1,23 @@
 #include "SupercellCompression/Astc.h"
 #include "memory/alloc.h"
 
+#include "SupercellCompression/exception/Astc.h"
+#include "exception/io/BinariesExceptions.h"
+
 namespace sc
 {
 	namespace Decompressor
 	{
 		void Astc::read_header(Stream& buffer, uint16_t& width, uint16_t& height, uint8_t& blocks_x, uint8_t& blocks_y)
 		{
-			for (uint8_t i = 0; sizeof(AstcFileIdentifier) > i; i++)
+			uint8_t magic[sizeof(AstcFileIdentifier)];
+			buffer.read(&magic, sizeof(magic));
+
+			for (uint8_t i = 0; sizeof(magic) > i; i++)
 			{
-				if (buffer.read_unsigned_byte() != AstcFileIdentifier[i])
+				if (magic[i] != AstcFileIdentifier[i])
 				{
-					// TODO: exception
+					throw BadMagicException((uint8_t*)&AstcFileIdentifier, (uint8_t*)&magic, sizeof(magic));
 				}
 			}
 

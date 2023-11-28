@@ -9,13 +9,12 @@ namespace sc {
 	{
 		namespace Compressor
 		{
+			const char* metadata_delim = "START";
+
 			void write_metadata(Stream& input)
 			{
 				// TODO !!!!!!!!!!!!!!!!!!!!!!
-
-				const char* metadata_delim = "START";
-
-				input.write(metadata_delim, strlen(metadata_delim));
+				input.write(metadata_delim, sizeof(metadata_delim));
 
 				sc::BufferStream metadata;
 
@@ -31,7 +30,7 @@ namespace sc {
 
 			void compress(Stream& input, Stream& output, CompressorContext& context)
 			{
-				output.write_unsigned_short(0x4353);
+				output.write_unsigned_short(SC_MAGIC);
 
 				if (context.write_assets)
 				{
@@ -85,10 +84,9 @@ namespace sc {
 
 				case Signature::Lzham:
 				{
-					const uint32_t magic_number = 0x5A4C4353;
 					const uint32_t dictionary_size = 18;
 
-					output.write_unsigned_int(magic_number);
+					output.write_unsigned_int(SCLZ_MAGIC);
 					output.write_unsigned_int(dictionary_size);
 					output.write_unsigned_int(static_cast<uint32_t>(input.length()));
 

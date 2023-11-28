@@ -1,8 +1,7 @@
 #include "SupercellCompression/Zstd.h"
 
 #include "exception/MemoryAllocationException.h"
-#include "SupercellCompression/exception/Zstd/CompressException.h"
-#include "SupercellCompression/exception/Zstd/CompressInitException.h"
+#include "SupercellCompression/exception/Zstd.h"
 
 namespace sc
 {

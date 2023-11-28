@@ -13,6 +13,9 @@
 namespace sc {
 	namespace ScCompression
 	{
+		const uint16_t SC_MAGIC = 0x4353;
+		const uint32_t SCLZ_MAGIC = 0x5A4C4353;
+
 		enum class Signature
 		{
 			Lzma,

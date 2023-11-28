@@ -1,7 +1,7 @@
 #include "SupercellCompression/Lzham/Decompressor.h"
 
 #include "exception/MemoryAllocationException.h"
-#include "SupercellCompression/exception/Lzham/DecompressInitException.h"
+#include "SupercellCompression/exception/Lzham.H"
 
 namespace sc
 {

@@ -1,10 +1,9 @@
 #include "SupercellCompression/Lzma.h"
 
-#include "SupercellCompression/exception/lzma/CompressInitException.h"
-#include "SupercellCompression/exception/lzma/CompressPropsException.h"
+#include "SupercellCompression/exception/Lzma.h"
 
 static const size_t Stream_Size = (4 * 1024 * 1024); // 4MB
-static  SizeT LzmaHeaderLength = LZMA_PROPS_SIZE;
+static SizeT LzmaHeaderLength = LZMA_PROPS_SIZE;
 
 struct CSeqInStreamWrap
 {
@@ -50,7 +49,7 @@ namespace sc
 			res = LzmaEnc_SetProps(m_context, &props);
 			if (res != SZ_OK)
 			{
-				throw LzmaCompressPropsException();
+				throw LzmaCompressInitException();
 			}
 			m_use_long_unpacked_data = props.use_long_unpacked_length;
 		}

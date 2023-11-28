@@ -1,9 +1,7 @@
 #include "SupercellCompression/Lzma.h"
 
 #include "exception/MemoryAllocationException.h"
-#include "SupercellCompression/exception/lzma/DecompressInitException.h"
-#include "SupercellCompression/exception/lzma/DecompressMissingEndMarkException.h"
-#include "SupercellCompression/exception/lzma/DecompressCorruptedDataException.h"
+#include "SupercellCompression/exception/Lzma.h"
 
 namespace sc
 {
@@ -66,7 +64,7 @@ namespace sc
 					m_unpacked_size -= out_processed;
 
 					if (output.write(m_output_buffer, out_position) != out_position || res != SZ_OK)
-						throw LzmaCorruptedDataException();
+						throw LzmaMissingEndMarkException();
 
 					out_position = 0;
 

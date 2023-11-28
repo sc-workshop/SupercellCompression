@@ -1,10 +1,9 @@
 #include "SupercellCompression/Astc.h"
 #include "memory/alloc.h"
 
-#include "SupercellCompression/exception/Astc/CompressException.h"
-#include "SupercellCompression/exception/Astc/CompressInitException.h"
-#include "SupercellCompression/exception/Astc/CompressConfigInitException.h"
-#include "SupercellCompression/exception/ImageInterface/ImageAlreadyCompressedException.h"
+#include "SupercellCompression/exception/Astc.h"
+#include "exception/image/BasicExceptions.h"
+
 #include <astcenc_internal_entry.h>
 
 namespace sc
@@ -15,7 +14,7 @@ namespace sc
 		{
 			if (image.is_compressed())
 			{
-				throw ImageAlreadyCompressedException();
+				throw ImageInvalidParamsException();
 			}
 
 			output.write(AstcFileIdentifier, sizeof(AstcFileIdentifier));

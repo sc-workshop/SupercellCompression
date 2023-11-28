@@ -1,8 +1,7 @@
 #include "SupercellCompression/Zstd.h"
 
 #include "exception/MemoryAllocationException.h"
-#include "SupercellCompression/exception/Zstd/DecompressInitException.h"
-#include "SupercellCompression/exception/Zstd/CorruptedDataException.h"
+#include "SupercellCompression/exception/Zstd.h"
 
 namespace sc
 {
@@ -67,7 +66,7 @@ namespace sc
 
 					size_t res = ZSTD_decompressStream(m_context, &output_buffer, &input_buffer);
 					if (ZSTD_isError(res)) {
-						throw ZstdCorruptedDataException();
+						throw ZstdCorruptedDecompressException();
 					}
 
 					output.write(m_output_buffer, output_buffer.pos);

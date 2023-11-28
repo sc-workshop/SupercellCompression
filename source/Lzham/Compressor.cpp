@@ -1,8 +1,7 @@
 #include "SupercellCompression/Lzham/Compressor.h"
 
 #include "exception/MemoryAllocationException.h"
-#include "SupercellCompression/exception/Lzham/CompressInitException.h"
-#include "SupercellCompression/exception/Lzham/CompressCorruptedDataException.h"
+#include "SupercellCompression/exception/Lzham.h"
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 
@@ -60,7 +59,7 @@ namespace sc
 					input_buffer_position = static_cast<uint32_t>(min(Lzham::Stream_Size, remain_bytes));
 					if (input.read(m_input_buffer, input_buffer_position) != input_buffer_position)
 					{
-						throw LzhamCompressCorruptedDataException();
+						throw LzhamCorruptedDecompressException();
 					}
 
 					remain_bytes -= input_buffer_position;
@@ -81,10 +80,7 @@ namespace sc
 
 				if (output_bytes_length)
 				{
-					if (output.write(m_output_buffer, output_bytes_length) != output_bytes_length)
-					{
-						throw LzhamCompressCorruptedDataException();
-					}
+					output.write(m_output_buffer, output_bytes_length);
 				}
 
 				if (status >= LZHAM_COMP_STATUS_FIRST_SUCCESS_OR_FAILURE_CODE)

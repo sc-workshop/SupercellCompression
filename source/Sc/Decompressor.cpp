@@ -1,7 +1,7 @@
 #include "SupercellCompression/ScCompression.h"
 
 #include "io/memory_stream.h"
-#include "SupercellCompression/exception/Sc/BadFileMagicException.h"
+#include "exception/io/BinariesExceptions.h"
 
 namespace sc {
 	namespace ScCompression
@@ -221,9 +221,9 @@ namespace sc {
 			void decompress(Stream& input, Stream& output, MetadataAssetArray* metadataArray)
 			{
 				int16_t magic = input.read_unsigned_short(Endian::Big);
-				if (magic != 0x4353)
+				if (magic != SC_MAGIC)
 				{
-					throw BadCompressedScFileMagic();
+					throw BadMagicException((uint8_t*)&SC_MAGIC, (uint8_t*)&magic, sizeof(uint16_t));
 				}
 
 				uint8_t* compressed_data_ptr = nullptr;
