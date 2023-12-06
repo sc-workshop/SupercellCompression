@@ -1,4 +1,4 @@
-workspace "ScCompression"
+workspace "SupercellCompression"
     architecture "x64"
 
     configurations {

@@ -1,4 +1,4 @@
-project "SupercellCompression"
+project "Compression"
     kind "StaticLib"
 
     language "C++"
@@ -25,7 +25,7 @@ project "SupercellCompression"
 	}
 	
 	links {
-		"SupercellCore",
+		"Core",
         "LZMA",
 		"LZHAM",
 		"Zstandard",

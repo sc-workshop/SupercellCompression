@@ -1,5 +1,5 @@
 
-project "SupercellCompressionCLI"
+project "CompressionCLI"
     kind "ConsoleApp"
 
     language "C++"
@@ -19,5 +19,5 @@ project "SupercellCompressionCLI"
     }
 	
 	links {
-        "SupercellCompression"
+        "Compression"
     }
