@@ -21,15 +21,3 @@ project "SupercellCompressionCLI"
 	links {
         "SupercellCompression"
     }
-
-	filter "configurations:Debug"
-		defines "DEBUG"
-		runtime "Debug"
-		symbols "on"
-        optimize "off"
-    
-    filter "configurations:Release"
-        defines "NDEBUG"
-        runtime "Release"
-        symbols "off"
-        optimize "on"

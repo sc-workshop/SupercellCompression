@@ -17,7 +17,7 @@ project "SupercellCompression"
     includedirs
 	{
 		"./include",
-		"%{wks.location}/core",
+		"./core",
 		"./dependencies/lzham/include",
 		"./dependencies/lzma/include",
 		"./dependencies/zstd/include",
