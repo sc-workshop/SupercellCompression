@@ -1,9 +1,29 @@
 #include "SupercellCompression/Lzma.h"
 
+#include "memory/alloc.h"
+
+#include "Alloc.h"
+#include "LzmaEnc.h"
 #include "SupercellCompression/exception/Lzma.h"
 
-static const size_t Stream_Size = (4 * 1024 * 1024); // 4MB
-static SizeT LzmaHeaderLength = LZMA_PROPS_SIZE;
+namespace sc
+{
+	namespace lzma
+	{
+		void* lzma_alloc(void*, size_t size)
+		{
+			return memalloc(size);
+		}
+		void lzma_free(void*, void* address)
+		{
+			free(address);
+		}
+
+		const void* LzmaAlloc[] = { &lzma_alloc , &lzma_free };
+	}
+}
+
+const size_t Stream_Size = (4 * 1024 * 1024); // 4MB
 
 struct CSeqInStreamWrap
 {
@@ -37,28 +57,29 @@ namespace sc
 {
 	namespace Compressor
 	{
-		Lzma::Lzma(LzmaProps& props)
+		Lzma::Lzma(Props& props)
 		{
-			m_context = LzmaEnc_Create(&LzAllocObj);
+			m_context = LzmaEnc_Create((ISzAllocPtr)&lzma::LzmaAlloc);
 			if (!m_context)
 			{
 				throw LzmaCompressInitException();
 			}
 
 			SRes res;
-			res = LzmaEnc_SetProps(m_context, &props);
+			res = LzmaEnc_SetProps(m_context, (CLzmaEncProps*)&props);
 			if (res != SZ_OK)
 			{
 				throw LzmaCompressInitException();
 			}
+
 			m_use_long_unpacked_data = props.use_long_unpacked_length;
 		}
 
 		void Lzma::compress_stream(Stream& input, Stream& output)
 		{
-			Byte header[LZMA_PROPS_SIZE];
-			LzmaEnc_WriteProperties(m_context, (Byte*)header, &LzmaHeaderLength);
-			output.write(header, LZMA_PROPS_SIZE);
+			Byte header[lzma::PROPS_SIZE];
+			LzmaEnc_WriteProperties(m_context, (Byte*)header, (SizeT*)&lzma::PROPS_SIZE);
+			output.write(header, lzma::PROPS_SIZE);
 
 			size_t file_size = input.length() - input.position();
 			if (m_use_long_unpacked_data)
@@ -70,20 +91,20 @@ namespace sc
 				output.write_unsigned_int(static_cast<uint32_t>(file_size));
 			}
 
-			CSeqInStreamWrap inWrap = {};
+			CSeqInStreamWrap inWrap;
 			inWrap.vt.Read = LzmaStreamRead;
 			inWrap.input = &input;
 
-			// Write stream wrap
-			CSeqOutStreamWrap outWrap = {};
+			CSeqOutStreamWrap outWrap;
 			outWrap.vt.Write = LzmaStreamWrite;
 			outWrap.output = &output;
-			LzmaEnc_Encode(m_context, &outWrap.vt, &inWrap.vt, nullptr, &LzAllocObj, &LzAllocObj);
+
+			LzmaEnc_Encode(m_context, &outWrap.vt, &inWrap.vt, nullptr, (ISzAllocPtr)&lzma::LzmaAlloc, (ISzAllocPtr)&lzma::LzmaAlloc);
 		}
 
 		Lzma::~Lzma()
 		{
-			LzmaEnc_Destroy(m_context, &LzAllocObj, &LzAllocObj);
+			LzmaEnc_Destroy(m_context, (ISzAllocPtr)&lzma::LzmaAlloc, (ISzAllocPtr)&lzma::LzmaAlloc);
 		}
 	}
 }

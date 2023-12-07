@@ -1,23 +1,30 @@
+#pragma once
+
 #include "SupercellCompression/Astc.h"
+#include "generic/image/image.h"
+#include <astcenc.h>
 
 namespace sc
 {
-	astcenc_swizzle get_astc_swizzle(Image::BasePixelType type)
+	namespace astc
 	{
-		switch (type)
+		astcenc_swizzle get_swizzle(Image::BasePixelType type)
 		{
-		case sc::Image::BasePixelType::RGB:
-			return { ASTCENC_SWZ_R, ASTCENC_SWZ_G, ASTCENC_SWZ_B, ASTCENC_SWZ_0 };
+			switch (type)
+			{
+			case sc::Image::BasePixelType::RGB:
+				return { ASTCENC_SWZ_R, ASTCENC_SWZ_G, ASTCENC_SWZ_B, ASTCENC_SWZ_0 };
 
-		case sc::Image::BasePixelType::LA:
-			return { ASTCENC_SWZ_R, ASTCENC_SWZ_A, ASTCENC_SWZ_0, ASTCENC_SWZ_0 };
+			case sc::Image::BasePixelType::LA:
+				return { ASTCENC_SWZ_R, ASTCENC_SWZ_A, ASTCENC_SWZ_0, ASTCENC_SWZ_0 };
 
-		case sc::Image::BasePixelType::L:
-			return { ASTCENC_SWZ_R, ASTCENC_SWZ_0, ASTCENC_SWZ_0, ASTCENC_SWZ_0 };
+			case sc::Image::BasePixelType::L:
+				return { ASTCENC_SWZ_R, ASTCENC_SWZ_0, ASTCENC_SWZ_0, ASTCENC_SWZ_0 };
 
-		case sc::Image::BasePixelType::RGBA:
-		default:
-			return { ASTCENC_SWZ_R, ASTCENC_SWZ_G, ASTCENC_SWZ_B, ASTCENC_SWZ_A };
+			case sc::Image::BasePixelType::RGBA:
+			default:
+				return { ASTCENC_SWZ_R, ASTCENC_SWZ_G, ASTCENC_SWZ_B, ASTCENC_SWZ_A };
+			}
 		}
 	}
 }

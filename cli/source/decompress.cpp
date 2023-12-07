@@ -1,10 +1,12 @@
 #include "main.h"
 #include "SupercellCompression.h"
 
+using namespace sc::Decompressor;
+
 void LZMA_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
-	uint8_t header[LZMA_PROPS_SIZE];
-	input.read(&header, LZMA_PROPS_SIZE);
+	uint8_t header[sc::lzma::PROPS_SIZE];
+	input.read(&header, sc::lzma::PROPS_SIZE);
 
 	uint64_t unpacked_length;
 	if (options.binary.lzma.use_long_unpacked_length)
@@ -28,9 +30,9 @@ void LZHAM_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions&
 		std::cout << "[Error] LZHAM file has bad magic";
 	}
 
-	sc::Decompressor::LzhamDecompressProps props;
-	props.m_dict_size_log2 = input.read_unsigned_int();
-	props.m_unpacked_length = input.read_unsigned_long();
+	Lzham::Props props;
+	props.dict_size_log2 = input.read_unsigned_int();
+	props.unpacked_length = input.read_unsigned_long();
 
 	sc::Decompressor::Lzham context(props);
 	context.decompress_stream(input, output);
@@ -44,12 +46,9 @@ void ZSTD_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& 
 
 void ASTC_decompress(sc::Stream& input, sc::Stream& output, CommandLineOptions& options)
 {
-	using namespace sc::Decompressor;
-	using namespace sc;
-
 	uint16_t width;
 	uint16_t height;
-	AstcDecompressProps props;
+	Astc::Props props;
 
 	Astc::read_header(input, width, height, props.blocks_x, props.blocks_y);
 

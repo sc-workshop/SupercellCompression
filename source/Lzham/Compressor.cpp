@@ -1,5 +1,6 @@
 #include "SupercellCompression/Lzham/Compressor.h"
 
+#include "lzham.h"
 #include "exception/MemoryAllocationException.h"
 #include "SupercellCompression/exception/Lzham.h"
 
@@ -9,9 +10,19 @@ namespace sc
 {
 	namespace Compressor
 	{
-		Lzham::Lzham(LzhamCompressProps& props)
+		void Lzham::write(Stream& input, Stream& output, Props& props)
 		{
-			m_state = lzham_compress_init(&props);
+			output.write(&lzham::FileIdentifier, sizeof(lzham::FileIdentifier));
+			output.write_unsigned_int(props.dict_size_log2);
+			output.write_unsigned_long(input.length() - input.position());
+
+			Lzham context(props);
+			context.compress_stream(input, output);
+		}
+
+		Lzham::Lzham(Props& props)
+		{
+			m_state = lzham_compress_init((lzham_compress_params*)&props);
 			if (!m_state)
 			{
 				throw LzhamCompressInitException();

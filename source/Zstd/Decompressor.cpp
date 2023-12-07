@@ -1,5 +1,6 @@
 #include "SupercellCompression/Zstd.h"
 
+#include "zstd.h"
 #include "exception/MemoryAllocationException.h"
 #include "SupercellCompression/exception/Zstd.h"
 
@@ -7,7 +8,7 @@ namespace sc
 {
 	namespace Decompressor
 	{
-		Zstd::Zstd()
+		Zstd::Zstd() : Input_Buffer_Size(ZSTD_DStreamInSize()), Output_Buffer_Size(ZSTD_DStreamOutSize())
 		{
 			m_context = ZSTD_createDStream();
 			if (!m_context)

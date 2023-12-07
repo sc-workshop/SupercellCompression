@@ -509,15 +509,17 @@ namespace sc
 
 	void KhronosTexture::decompress_astc(Stream& input, Stream& output, uint16_t width, uint16_t height)
 	{
+		using namespace Decompressor;
+
 		uint32_t blocks_x;
 		uint32_t blocks_y;
 		uint32_t blocks_z;
 		get_astc_blocks(m_internal_format, blocks_x, blocks_y, blocks_z);
 
-		Decompressor::AstcDecompressProps props;
+		Astc::Props props;
 		props.blocks_x = blocks_x;
 		props.blocks_y = blocks_y;
-		props.profile = colorspace() == ColorSpace::Linear ? ASTCENC_PRF_LDR : ASTCENC_PRF_LDR_SRGB;
+		props.profile = colorspace() == ColorSpace::Linear ? astc::Profile::PRF_LDR : astc::Profile::PRF_LDR_SRGB;
 
 		Decompressor::Astc context(props);
 		context.decompress_image(
@@ -528,12 +530,14 @@ namespace sc
 
 	void KhronosTexture::compress_astc(Stream& input, Stream& output)
 	{
+		using namespace Compressor;
+
 		uint32_t blocks_x;
 		uint32_t blocks_y;
 		uint32_t blocks_z;
 		get_astc_blocks(m_internal_format, blocks_x, blocks_y, blocks_z);
 
-		Compressor::AstcCompressProps props;
+		Astc::Props props;
 		props.blocks_x = blocks_x;
 		props.blocks_y = blocks_y;
 

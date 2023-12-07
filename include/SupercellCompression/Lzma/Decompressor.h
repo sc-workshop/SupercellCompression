@@ -8,20 +8,20 @@ namespace sc
 		class Lzma : public DecompressionInterface
 		{
 		public:
-			Lzma(Byte header[LZMA_PROPS_SIZE], const UInt64 unpacked_size);
+			Lzma(uint8_t header[lzma::PROPS_SIZE], const uint64_t unpacked_size);
 			~Lzma();
 
 			virtual void decompress_stream(Stream& input, Stream& output) override;
 
 		private:
-			CLzmaDec m_context;
+			CLzmaDecPtr m_context;
 			size_t m_unpacked_size;
-
-			// -- Compression Buffer --
-			static const size_t Stream_Size = 1 << 24;
 
 			uint8_t* m_input_buffer = nullptr;
 			uint8_t* m_output_buffer = nullptr;
+
+			// -- Compression Buffer --
+			static const size_t Stream_Size = 1 << 24;
 		};
 	}
 }

@@ -42,7 +42,7 @@ namespace sc {
 			{
 				Signature signature = Signature::Zstandard;
 
-				bool write_assets = true;
+				bool write_assets = false;
 				//MetadataAssetArray assets;
 
 				uint32_t threads_count = std::thread::hardware_concurrency() <= 0 ? 1 : std::thread::hardware_concurrency();

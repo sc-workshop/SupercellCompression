@@ -18,8 +18,8 @@ namespace sc
 			ZSTD_DStream* m_context;
 
 			// -- Stream Buffer --
-			const size_t Input_Buffer_Size = ZSTD_DStreamInSize();
-			const size_t Output_Buffer_Size = ZSTD_DStreamOutSize();
+			const size_t Input_Buffer_Size;
+			const size_t Output_Buffer_Size;
 
 			uint8_t* m_input_buffer = nullptr;
 			uint8_t* m_output_buffer = nullptr;

@@ -1,4 +1,5 @@
 #pragma once
+#include "SupercellCompression/Astc.h"
 #include "SupercellCompression/interface/ImageCompressionInterface.h"
 
 #include <thread>
@@ -7,27 +8,18 @@ namespace sc
 {
 	namespace Compressor
 	{
-		enum class AstcQuality : int
-		{
-			Fastest = 0,
-			Fast = 10,
-			Medium = 60,
-			Thorough = 98,
-			VeryThorough = 99,
-			Exhausitive = 100
-		};
-
-		struct AstcCompressProps
-		{
-			astcenc_profile profile = ASTCENC_PRF_LDR;
-			AstcQuality quality = AstcQuality::Medium;
-			uint8_t blocks_x = 4;
-			uint8_t blocks_y = 4;
-			uint32_t threads_count = std::thread::hardware_concurrency() || 1;
-		};
-
 		class Astc : public ImageCompressionInterface
 		{
+		public:
+			struct Props
+			{
+				astc::Profile profile = astc::Profile::PRF_LDR;
+				astc::Quality quality = astc::Quality::Medium;
+				uint8_t blocks_x = 4;
+				uint8_t blocks_y = 4;
+				uint32_t threads_count = std::thread::hardware_concurrency();
+			};
+
 		public:
 
 			/// <summary>
@@ -36,10 +28,10 @@ namespace sc
 			/// <param name="image"></param>
 			/// <param name="props"></param>
 			/// <param name="output"></param>
-			static void write(Image& image, AstcCompressProps props, Stream& output);
+			static void write(Image& image, Props props, Stream& output);
 
 		public:
-			Astc(AstcCompressProps& props);
+			Astc(Props& props);
 			virtual ~Astc();
 
 			/// <summary>

@@ -1,23 +1,25 @@
 #include "SupercellCompression/Astc.h"
+#include <astcenc.h>
+
 #include "memory/alloc.h"
 
 #include "SupercellCompression/exception/Astc.h"
 #include "exception/image/BasicExceptions.h"
 
-#include <astcenc_internal_entry.h>
+using namespace sc::astc;
 
 namespace sc
 {
 	namespace Compressor
 	{
-		void Astc::write(Image& image, AstcCompressProps props, Stream& output)
+		void Astc::write(Image& image, Props props, Stream& output)
 		{
 			if (image.is_compressed())
 			{
 				throw ImageInvalidParamsException();
 			}
 
-			output.write(AstcFileIdentifier, sizeof(AstcFileIdentifier));
+			output.write(astc::FileIdentifier, sizeof(astc::FileIdentifier));
 
 			// x y z blocks
 			output.write_unsigned_byte(props.blocks_x);
@@ -43,12 +45,12 @@ namespace sc
 			);
 		}
 
-		Astc::Astc(AstcCompressProps& props)
+		Astc::Astc(Props& props)
 		{
 			m_config = new astcenc_config();
 			astcenc_error status;
 			status = astcenc_config_init(
-				props.profile,
+				(astcenc_profile)props.profile,
 				props.blocks_x, props.blocks_y, 1,
 				float(props.quality), 0, m_config
 			);
@@ -64,7 +66,7 @@ namespace sc
 
 		void Astc::compress_image(uint16_t widht, uint16_t height, Image::BasePixelType type, Stream& input, Stream& output)
 		{
-			astcenc_swizzle swizzle = get_astc_swizzle(type);
+			astcenc_swizzle swizzle = get_swizzle(type);
 
 			uint8_t* image_buffer = (uint8_t*)input.data() + input.position();
 
@@ -75,8 +77,8 @@ namespace sc
 			encoder_image.data = (void**)&image_buffer;
 			encoder_image.data_type = ASTCENC_TYPE_U8;
 
-			const unsigned int& blocks_x = m_context->context.config.block_x;
-			const unsigned int& blocks_y = m_context->context.config.block_y;
+			const unsigned int& blocks_x = m_config->block_x;
+			const unsigned int& blocks_y = m_config->block_y;
 
 			unsigned int xblocks = (encoder_image.dim_x + blocks_x - 1) / blocks_x;
 			unsigned int yblocks = (encoder_image.dim_y + blocks_y - 1) / blocks_y;

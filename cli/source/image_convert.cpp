@@ -36,7 +36,7 @@ void load_astc(Stream& stream, RawImage** image, CommandLineOptions& options)
 {
 	uint16_t width;
 	uint16_t height;
-	Decompressor::AstcDecompressProps props;
+	Decompressor::Astc::Props props;
 
 	Decompressor::Astc::read_header(stream, width, height, props.blocks_x, props.blocks_y);
 
@@ -54,7 +54,7 @@ void load_astc(Stream& stream, RawImage** image, CommandLineOptions& options)
 
 void write_astc(Stream& stream, RawImage& image, CommandLineOptions& options)
 {
-	Compressor::AstcCompressProps props;
+	Compressor::Astc::Props props;
 	props.blocks_x = options.binary.astc.x_blocks;
 	props.blocks_y = options.binary.astc.y_blocks;
 	// TODO: quality flag

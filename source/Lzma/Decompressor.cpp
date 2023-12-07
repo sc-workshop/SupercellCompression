@@ -1,5 +1,9 @@
 #include "SupercellCompression/Lzma.h"
 
+#include "memory/alloc.h"
+
+#include "Alloc.h"
+#include "LzmaDec.h"
 #include "exception/MemoryAllocationException.h"
 #include "SupercellCompression/exception/Lzma.h"
 
@@ -7,16 +11,18 @@ namespace sc
 {
 	namespace Decompressor
 	{
-		Lzma::Lzma(Byte header[LZMA_PROPS_SIZE], const UInt64 unpackedSize) : m_unpacked_size(unpackedSize)
+		Lzma::Lzma(uint8_t header[lzma::PROPS_SIZE], const uint64_t unpackedSize) : m_unpacked_size(unpackedSize)
 		{
-			LzmaDec_Construct(&m_context);
-			SRes res = LzmaDec_Allocate(&m_context, header, LZMA_PROPS_SIZE, &LzAllocObj);
+			m_context = new CLzmaDec();
+			LzmaDec_Construct((CLzmaDec*)m_context);
+
+			SRes res = LzmaDec_Allocate((CLzmaDec*)m_context, header, LZMA_PROPS_SIZE, (ISzAllocPtr)&lzma::LzmaAlloc);
 			if (res != SZ_OK)
 			{
 				throw LzmaDecompressInitException();
 			}
 
-			LzmaDec_Init(&m_context);
+			LzmaDec_Init((CLzmaDec*)m_context);
 
 			m_input_buffer = (uint8_t*)malloc(Lzma::Stream_Size);
 			if (!m_input_buffer)
@@ -57,7 +63,7 @@ namespace sc
 						finishMode = LZMA_FINISH_END;
 					}
 
-					res = LzmaDec_DecodeToBuf(&m_context, m_output_buffer + out_position, &out_processed,
+					res = LzmaDec_DecodeToBuf((CLzmaDec*)m_context, m_output_buffer + out_position, &out_processed,
 						m_input_buffer + in_position, &in_processed, finishMode, &status);
 					in_position += in_processed;
 					out_position += out_processed;
@@ -86,7 +92,7 @@ namespace sc
 
 		Lzma::~Lzma()
 		{
-			LzmaDec_Free(&m_context, &LzAllocObj);
+			LzmaDec_Free((CLzmaDec*)m_context, (ISzAllocPtr)&lzma::LzmaAlloc);
 
 			if (m_input_buffer)
 			{
@@ -97,6 +103,8 @@ namespace sc
 			{
 				free(m_output_buffer);
 			}
+
+			delete m_context;
 		}
 	}
 }

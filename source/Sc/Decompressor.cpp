@@ -220,6 +220,8 @@ namespace sc {
 
 			void decompress(Stream& input, Stream& output, MetadataAssetArray* metadataArray)
 			{
+				using namespace sc::Decompressor;
+
 				int16_t magic = input.read_unsigned_short(Endian::Big);
 				if (magic != SC_MAGIC)
 				{
@@ -259,7 +261,7 @@ namespace sc {
 				if (version == 3)
 				{
 					MemoryStream compressed_data(compressed_data_ptr, compressed_data_length);
-					sc::Decompressor::Zstd context;
+					Zstd context;
 					context.decompress_stream(compressed_data, output);
 				}
 				else if (version == 1)
@@ -268,9 +270,9 @@ namespace sc {
 					if (*(uint32_t*)compressed_data_ptr == 0x5A4C4353)
 					{
 						MemoryStream compressed_data(compressed_data_ptr + 4, compressed_data_length - 4);
-						sc::Decompressor::LzhamDecompressProps props;
-						props.m_dict_size_log2 = compressed_data.read_unsigned_int();
-						props.m_unpacked_length = compressed_data.read_unsigned_int();
+						Lzham::Props props;
+						props.dict_size_log2 = compressed_data.read_unsigned_int();
+						props.unpacked_length = compressed_data.read_unsigned_int();
 						sc::Decompressor::Lzham context(props);
 						context.decompress_stream(compressed_data, output);
 					}
@@ -278,12 +280,12 @@ namespace sc {
 					{
 						MemoryStream compressed_data(compressed_data_ptr, compressed_data_length);
 
-						uint8_t header[LZMA_PROPS_SIZE];
-						compressed_data.read(header, LZMA_PROPS_SIZE);
+						uint8_t header[lzma::PROPS_SIZE];
+						compressed_data.read(header, lzma::PROPS_SIZE);
 
 						uint32_t unpacked_length = compressed_data.read_unsigned_int();
 
-						sc::Decompressor::Lzma context(header, unpacked_length);
+						Lzma context(header, unpacked_length);
 						context.decompress_stream(compressed_data, output);
 					}
 				}

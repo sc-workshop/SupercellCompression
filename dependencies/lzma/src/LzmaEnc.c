@@ -3055,9 +3055,6 @@ SRes LzmaEnc_Encode(CLzmaEncHandle pp, ISeqOutStream *outStream, ISeqInStream *i
 
 SRes LzmaEnc_WriteProperties(CLzmaEncHandle pp, Byte *props, SizeT *size)
 {
-  if (*size < LZMA_PROPS_SIZE)
-    return SZ_ERROR_PARAM;
-  *size = LZMA_PROPS_SIZE;
   {
     const CLzmaEnc *p = (const CLzmaEnc *)pp;
     const UInt32 dictSize = p->dictSize;

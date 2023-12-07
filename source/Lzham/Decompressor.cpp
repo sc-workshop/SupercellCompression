@@ -1,5 +1,6 @@
 #include "SupercellCompression/Lzham/Decompressor.h"
 
+#include "lzham.h"
 #include "exception/MemoryAllocationException.h"
 #include "SupercellCompression/exception/Lzham.H"
 
@@ -7,15 +8,15 @@ namespace sc
 {
 	namespace Decompressor
 	{
-		Lzham::Lzham(LzhamDecompressProps& props)
+		Lzham::Lzham(Props& props)
 		{
-			m_state = lzham_decompress_init(&props);
+			m_state = lzham_decompress_init((lzham_decompress_params*)&props);
 			if (!m_state)
 			{
 				throw LzhamDecompressInitException();
 			}
 
-			m_unpacked_length = props.m_unpacked_length;
+			m_unpacked_length = props.unpacked_length;
 
 			m_input_buffer = (uint8_t*)malloc(Lzham::Stream_Size);
 			m_output_buffer = (uint8_t*)malloc(Lzham::Stream_Size);

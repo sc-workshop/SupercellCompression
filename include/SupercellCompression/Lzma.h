@@ -1,21 +1,46 @@
 #pragma once
 
-#include "memory/alloc.h"
 #include <stdint.h>
-#include <Alloc.h>
-#include <LzmaDec.h>
-#include <LzmaEnc.h>
+
+#include "memory/alloc.h"
+
+#pragma region Forward Declaration
+
+typedef void* CLzmaDecPtr;
+typedef void* CLzmaEncHandle;
+
+#pragma endregion
 
 namespace sc
 {
-	static void* LzAlloc(ISzAllocPtr, size_t size)
+	namespace lzma
 	{
-		return sc::memalloc(size);
+#pragma region Constants
+
+		static const size_t PROPS_SIZE = 5;
+
+#pragma endregion
+
+		void* lzma_alloc(void*, size_t size);
+		void lzma_free(void*, void* address);
+		const void* LzmaAlloc[];
+
+#pragma region Enums
+
+		enum class Mode : int
+		{
+			Fast = 0,
+			Normal
+		};
+
+		enum class BinaryMode : int
+		{
+			HashChain = 0,
+			BinTree
+		};
+
+#pragma endregion
 	}
-	static void LzFree(ISzAllocPtr, void* address) {
-		free(address);
-	}
-	const ISzAlloc LzAllocObj = { LzAlloc, LzFree };
 }
 
 #include "Lzma/Decompressor.h"

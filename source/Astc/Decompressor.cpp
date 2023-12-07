@@ -1,4 +1,6 @@
 #include "SupercellCompression/Astc.h"
+#include <astcenc.h>
+
 #include "memory/alloc.h"
 
 #include "SupercellCompression/exception/Astc.h"
@@ -10,14 +12,14 @@ namespace sc
 	{
 		void Astc::read_header(Stream& buffer, uint16_t& width, uint16_t& height, uint8_t& blocks_x, uint8_t& blocks_y)
 		{
-			uint8_t magic[sizeof(AstcFileIdentifier)];
+			uint8_t magic[sizeof(astc::FileIdentifier)];
 			buffer.read(&magic, sizeof(magic));
 
 			for (uint8_t i = 0; sizeof(magic) > i; i++)
 			{
-				if (magic[i] != AstcFileIdentifier[i])
+				if (magic[i] != astc::FileIdentifier[i])
 				{
-					throw BadMagicException((uint8_t*)&AstcFileIdentifier, (uint8_t*)&magic, sizeof(magic));
+					throw BadMagicException((uint8_t*)&astc::FileIdentifier, (uint8_t*)&magic, sizeof(magic));
 				}
 			}
 
@@ -36,13 +38,13 @@ namespace sc
 			buffer.seek(3, Seek::Add);
 		};
 
-		Astc::Astc(AstcDecompressProps& props)
+		Astc::Astc(Props& props)
 		{
 			astcenc_error status;
 
 			astcenc_config config;
 			status = astcenc_config_init(
-				props.profile,
+				(astcenc_profile)props.profile,
 				props.blocks_x, props.blocks_y, 1,
 				ASTCENC_PRE_MEDIUM, ASTCENC_FLG_DECOMPRESS_ONLY,
 				&config
@@ -71,7 +73,7 @@ namespace sc
 
 		void Astc::decompress_image(uint16_t widht, uint16_t height, Image::BasePixelType type, Stream& input, Stream& output)
 		{
-			astcenc_swizzle swizzle = get_astc_swizzle(type);
+			astcenc_swizzle swizzle = astc::get_swizzle(type);
 
 			size_t data_size = (widht * height) * (uint8_t)type;
 			uint8_t* data = memalloc(data_size);

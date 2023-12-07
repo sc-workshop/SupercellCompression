@@ -30,6 +30,8 @@ namespace sc {
 
 			void compress(Stream& input, Stream& output, CompressorContext& context)
 			{
+				using namespace sc::Compressor;
+
 				output.write_unsigned_short(SC_MAGIC);
 
 				if (context.write_assets)
@@ -66,13 +68,13 @@ namespace sc {
 				{
 				case Signature::Lzma:
 				{
-					sc::Compressor::LzmaProps props;
+					Lzma::Props props;
 					props.level = 6;
 					props.pb = 2;
 					props.lc = 3;
 					props.lp = 0;
-					props.numThreads = context.threads_count > 1 ? 2 : 1;
-					props.dictSize = 262144;
+					props.threads = context.threads_count > 1 ? 2 : 1;
+					props.dict_size = 262144;
 
 					if (input.length() > 1 << 28)
 						props.lc = 4;
@@ -84,15 +86,15 @@ namespace sc {
 
 				case Signature::Lzham:
 				{
-					const uint32_t dictionary_size = 18;
+					const uint8_t dictionary_size = 18;
 
 					output.write_unsigned_int(SCLZ_MAGIC);
-					output.write_unsigned_int(dictionary_size);
-					output.write_unsigned_int(static_cast<uint32_t>(input.length()));
+					output.write_unsigned_byte(dictionary_size);
+					output.write_unsigned_int(static_cast<uint32_t>(input.length() - input.position()));
 
-					sc::Compressor::LzhamCompressProps props;
-					props.m_dict_size_log2 = dictionary_size;
-					props.m_max_helper_threads = static_cast<uint16_t>(context.threads_count > 0 && context.threads_count < LZHAM_MAX_HELPER_THREADS ? context.threads_count : -1);
+					Lzham::Props props;
+					props.dict_size_log2 = dictionary_size;
+					props.max_helper_threads = static_cast<uint16_t>(context.threads_count > 0 && context.threads_count < lzham::MAX_HELPER_THREADS ? context.threads_count : -1);
 
 					sc::Compressor::Lzham compression(props);
 					compression.compress_stream(input, output);
@@ -101,11 +103,11 @@ namespace sc {
 
 				case Signature::Zstandard:
 				{
-					sc::Compressor::ZstdProps props;
-					props.compressionLevel = 16;
-					props.checksumFlag = false;
-					props.contentSizeFlag = true;
-					props.nbWorkers = context.threads_count;
+					Zstd::Props props;
+					props.compression_level = 16;
+					props.checksum_flag = false;
+					props.content_size_flag = true;
+					props.workers_count = context.threads_count;
 
 					sc::Compressor::Zstd compression(props);
 					compression.compress_stream(input, output);
