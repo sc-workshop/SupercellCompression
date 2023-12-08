@@ -10,11 +10,6 @@
 
 #include "generic/ref.h"
 
-static const uint8_t KtxFileIdentifier[12] = {
-	//'«', 'K', 'T', 'X', ' ', '1', '1', '»', '\r', '\n', '\x1A', '\n'
-	0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0A, 0x1A, 0x0A
-};
-
 namespace sc
 {
 	enum class KhronosTextureCompression
@@ -28,6 +23,8 @@ namespace sc
 	class KhronosTexture : public CompressedImage
 	{
 	public:
+		static const uint8_t FileIdentifier[12];
+
 		enum class glInternalFormat : uint32_t {
 			GL_RGBA8 = 0x8058,
 			GL_RGB8 = 0x8051,

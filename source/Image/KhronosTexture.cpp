@@ -2,6 +2,10 @@
 
 namespace sc
 {
+	const uint8_t KhronosTexture::FileIdentifier[12] = {
+		0xAB, 'K', 'T', 'X', ' ', '1', '1', 0xBB, '\r', '\n', 0x1A, '\n'
+	};
+
 #pragma region Constructors
 	KhronosTexture::KhronosTexture(Stream& buffer)
 	{
@@ -72,7 +76,7 @@ namespace sc
 	{
 		bool is_compressed = m_type == glType::COMPRESSED;
 
-		buffer.write(&KtxFileIdentifier, sizeof(KtxFileIdentifier));
+		buffer.write(&KhronosTexture::FileIdentifier, sizeof(KhronosTexture::FileIdentifier));
 
 		// endianess
 		buffer.write_unsigned_int(0x04030201);
@@ -407,9 +411,9 @@ namespace sc
 #pragma region Private Functions
 	uint32_t KhronosTexture::read_header(Stream& buffer)
 	{
-		for (uint8_t i = 0; sizeof(KtxFileIdentifier) > i; i++)
+		for (uint8_t i = 0; sizeof(KhronosTexture::FileIdentifier) > i; i++)
 		{
-			if (buffer.read_byte() != KtxFileIdentifier[i])
+			if (buffer.read_byte() != KhronosTexture::FileIdentifier[i])
 			{
 				// TODO: exception
 			}
