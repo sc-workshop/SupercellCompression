@@ -213,6 +213,13 @@ namespace sc
 
 		m_levels[level_index] = buffer;
 	}
+
+	void KhronosTexture::reset_level_data(uint32_t level_index)
+	{
+		if (level_index >= m_levels.size()) level_index = static_cast<uint32_t>(m_levels.size()) - 1;
+
+		m_levels.erase(m_levels.begin(), m_levels.begin() + level_index);
+	}
 #pragma endregion
 
 #pragma region Static Functions
