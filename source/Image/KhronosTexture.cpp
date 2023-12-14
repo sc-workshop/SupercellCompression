@@ -55,8 +55,10 @@ namespace sc
 			m_type = glType::GL_UNSIGNED_BYTE;
 		}
 
+		MemoryStream image_data(image.data(), image.data_length());
+
 		set_level_data(
-			MemoryStream(image.data(), image.data_length()),
+			image_data,
 			image.depth(),
 			0
 		);
@@ -496,7 +498,7 @@ namespace sc
 #pragma endregion
 
 #pragma region
-	void KhronosTexture::get_astc_blocks(glInternalFormat format, uint32_t& x, uint32_t& y, uint32_t& z)
+	void KhronosTexture::get_astc_blocks(glInternalFormat format, uint8_t& x, uint8_t& y, uint8_t& z)
 	{
 		switch (format)
 		{
@@ -522,9 +524,9 @@ namespace sc
 	{
 		using namespace Decompressor;
 
-		uint32_t blocks_x;
-		uint32_t blocks_y;
-		uint32_t blocks_z;
+		uint8_t blocks_x;
+		uint8_t blocks_y;
+		uint8_t blocks_z;
 		get_astc_blocks(m_internal_format, blocks_x, blocks_y, blocks_z);
 
 		Astc::Props props;
@@ -543,9 +545,9 @@ namespace sc
 	{
 		using namespace Compressor;
 
-		uint32_t blocks_x;
-		uint32_t blocks_y;
-		uint32_t blocks_z;
+		uint8_t blocks_x;
+		uint8_t blocks_y;
+		uint8_t blocks_z;
 		get_astc_blocks(m_internal_format, blocks_x, blocks_y, blocks_z);
 
 		Astc::Props props;

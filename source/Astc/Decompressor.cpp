@@ -1,8 +1,8 @@
 #include "SupercellCompression/Astc.h"
+
 #include <astcenc.h>
 
 #include "memory/alloc.h"
-
 #include "SupercellCompression/exception/Astc.h"
 #include "exception/io/BinariesExceptions.h"
 

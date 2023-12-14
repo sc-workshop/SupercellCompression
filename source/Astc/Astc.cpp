@@ -1,8 +1,9 @@
 #pragma once
 
+#include <astcenc.h>
+
 #include "SupercellCompression/Astc.h"
 #include "generic/image/image.h"
-#include <astcenc.h>
 
 namespace sc
 {

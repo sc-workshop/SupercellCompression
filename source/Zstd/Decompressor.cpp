@@ -1,6 +1,7 @@
 #include "SupercellCompression/Zstd.h"
 
-#include "zstd.h"
+#include <zstd.h>
+
 #include "exception/MemoryAllocationException.h"
 #include "SupercellCompression/exception/Zstd.h"
 
@@ -39,7 +40,21 @@ namespace sc
 
 		void Zstd::decompress_stream(Stream& input, Stream& output)
 		{
-			uint64_t unpacked_size = ZSTD_getDecompressedSize(input.data(), input.length());
+			uint64_t unpacked_size = UINT64_MAX;
+
+			{
+				size_t position = input.position();
+				uint8_t frame_header[18];
+				input.read(frame_header, sizeof(frame_header));
+				unpacked_size = ZSTD_getFrameContentSize(&frame_header, sizeof(frame_header));
+
+				if (unpacked_size == ZSTD_CONTENTSIZE_ERROR)
+				{
+					unpacked_size = UINT64_MAX;
+				}
+
+				input.seek(position);
+			}
 
 			ZSTD_inBuffer input_buffer;
 			input_buffer.src = m_input_buffer;
@@ -65,8 +80,10 @@ namespace sc
 				{
 					output_buffer.pos = 0;
 
-					size_t res = ZSTD_decompressStream(m_context, &output_buffer, &input_buffer);
-					if (ZSTD_isError(res)) {
+					size_t result = ZSTD_decompressStream(m_context, &output_buffer, &input_buffer);
+					if (result == 0) break;
+
+					if (ZSTD_isError(result)) {
 						throw ZstdCorruptedDecompressException();
 					}
 

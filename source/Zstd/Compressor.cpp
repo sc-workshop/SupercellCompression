@@ -1,6 +1,7 @@
 #include "SupercellCompression/Zstd.h"
 
-#include "zstd.h"
+#include <zstd.h>
+
 #include "exception/MemoryAllocationException.h"
 #include "SupercellCompression/exception/Zstd.h"
 

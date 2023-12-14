@@ -149,7 +149,7 @@ namespace sc
 		glFormat get_type(glInternalFormat format);
 
 #pragma region
-		static void get_astc_blocks(glInternalFormat format, uint32_t& x, uint32_t& y, uint32_t& z);
+		static void get_astc_blocks(glInternalFormat format, uint8_t& x, uint8_t& y, uint8_t& z);
 		void decompress_astc(Stream& input, Stream& output, uint16_t width, uint16_t height);
 		void compress_astc(Stream& input, Stream& output);
 

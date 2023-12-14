@@ -16,7 +16,7 @@ namespace sc {
 				uint8_t* metadata_header = buffer_end - 6;
 
 				// -- Strings and Hashes data --
-				uint8_t strings_info_field_size = 0;
+				uint32_t strings_info_field_size = 0;
 				uint8_t hash_info_field_size = 0;
 
 				uint8_t* asset_info_ptr = nullptr;

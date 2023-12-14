@@ -1,8 +1,8 @@
 #include "SupercellCompression/Astc.h"
+
 #include <astcenc.h>
 
 #include "memory/alloc.h"
-
 #include "SupercellCompression/exception/Astc.h"
 #include "exception/image/BasicExceptions.h"
 
@@ -35,12 +35,14 @@ namespace sc
 			output.write(&height, 3);
 			output.write(&z_dimension, 3);
 
+			MemoryStream image_data(image.data(), image.data_length());
+
 			Astc context(props);
 			context.compress_image(
 				image.width(),
 				image.height(),
 				image.base_type(),
-				MemoryStream(image.data(), image.data_length()),
+				image_data,
 				output
 			);
 		}
