@@ -2,7 +2,6 @@
 cmake_minimum_required(VERSION 3.26)
 
 include(FetchContent)
-include(core/cmake/constants.cmake)
 
 # Downloading LZHAM repo
 FetchContent_Declare(

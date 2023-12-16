@@ -1,6 +1,4 @@
 include(FetchContent)
-include(cmake/Lzham.cmake)
-include(cmake/Lzma.cmake)
 
 set(Compression_Headers
     "include/SupercellCompression.h"
@@ -58,7 +56,13 @@ add_library("SupercellCompression" STATIC ${Compression_Source} ${Compression_He
 source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${Compression_Source} ${Compression_Headers})
 
 # Core Setup
-add_subdirectory(core)
+FetchContent_Declare(
+    SupercellCore
+    GIT_REPOSITORY https://github.com/sc-workshop/SC-Core.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(SupercellCore)
+
 sc_core_base_setup("SupercellCompression")
 set_target_properties("SupercellCompression" PROPERTIES
     FOLDER Supercell
@@ -84,10 +88,6 @@ set_target_properties("libzstd_static" PROPERTIES
     FOLDER Compression
 )
 
-set_target_properties("lzhamlib" PROPERTIES
-    FOLDER Compression
-)
-
 message("-- ASTC Encoder --")
 set(ISA_SSE41 ON)
 set(CLI OFF)
@@ -102,10 +102,12 @@ set_target_properties("astcenc-sse4.1-static" PROPERTIES
     FOLDER Compression
 )
 
+include(cmake/Lzma.cmake)
 set_target_properties("LzmaLib" PROPERTIES
     FOLDER Compression
 )
 
+include(cmake/Lzham.cmake)
 set_target_properties("lzhamlib" PROPERTIES
     FOLDER Compression
 )

@@ -58,6 +58,7 @@ namespace sc
 
 			ZSTD_inBuffer input_buffer;
 			input_buffer.src = m_input_buffer;
+			input_buffer.size = Input_Buffer_Size;
 
 			ZSTD_outBuffer output_buffer;
 			output_buffer.dst = m_output_buffer;
@@ -70,6 +71,11 @@ namespace sc
 			{
 				chunk_size = input.read(m_input_buffer, Input_Buffer_Size);
 				if (!chunk_size) {
+					if (unpacked_size > total_size)
+					{
+						throw ZstdCorruptedDecompressException();
+					}
+
 					break;
 				}
 
@@ -81,7 +87,6 @@ namespace sc
 					output_buffer.pos = 0;
 
 					size_t result = ZSTD_decompressStream(m_context, &output_buffer, &input_buffer);
-					if (result == 0) break;
 
 					if (ZSTD_isError(result)) {
 						throw ZstdCorruptedDecompressException();
@@ -89,6 +94,8 @@ namespace sc
 
 					output.write(m_output_buffer, output_buffer.pos);
 					total_size += output_buffer.pos;
+
+					if (result == 0) break;
 				}
 			}
 		}

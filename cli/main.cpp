@@ -178,9 +178,9 @@ int main(int argc, char* argv[])
 		std::cout << operation_describe << " operation took: ";
 		print_time(start_time);
 	}
-	catch (const sc::GeneralRuntimeException& exception)
+	catch (sc::GeneralRuntimeException& exception)
 	{
-		std::cout << "[ERROR] " << exception.what() << std::endl;
+		std::cout << "[ERROR] " << exception.message() << std::endl;
 		return 1;
 	}
 
