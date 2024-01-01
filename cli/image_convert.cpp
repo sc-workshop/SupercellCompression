@@ -20,8 +20,7 @@ void load_khronos(Stream& stream, vector<RawImage*>& output, CommandLineOptions&
 		RawImage* image = new RawImage(
 			texture.width() / (uint16_t)(pow(2, level_index)),
 			texture.height() / (uint16_t)(pow(2, level_index)),
-			texture.base_type(),
-			texture.depth()
+			texture.depth(), texture.colorspace()
 		);
 
 		MemoryStream image_data(image->data(), image->data_length());
@@ -42,7 +41,11 @@ void load_astc(Stream& stream, RawImage** image, CommandLineOptions&)
 
 	Decompressor::Astc::read_header(stream, width, height, props.blocks_x, props.blocks_y);
 
-	RawImage* image_buffer = new RawImage(width, height, Image::BasePixelType::RGBA, Image::PixelDepth::RGBA8);
+	RawImage* image_buffer = new RawImage(
+		width, height,
+		Image::PixelDepth::RGBA8
+	);
+
 	MemoryStream image_data(image_buffer->data(), image_buffer->data_length());
 
 	Decompressor::Astc context(props);
@@ -64,7 +67,10 @@ void write_astc(Stream& stream, RawImage& image, CommandLineOptions& options)
 
 	if (image.depth() != Image::PixelDepth::RGBA8)
 	{
-		RawImage image_buffer(image.width(), image.height(), Image::BasePixelType::RGBA, Image::PixelDepth::RGBA8);
+		RawImage image_buffer(
+			image.width(), image.height(),
+			Image::PixelDepth::RGBA8
+		);
 		image.copy(image_buffer);
 		Compressor::Astc::write(image_buffer, props, stream);
 	}
