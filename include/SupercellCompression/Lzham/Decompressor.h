@@ -32,7 +32,7 @@ namespace sc
 			};
 		public:
 			Lzham(Props& props);
-			~Lzham();
+			virtual ~Lzham();
 
 			virtual void decompress_stream(Stream& input, Stream& output);
 

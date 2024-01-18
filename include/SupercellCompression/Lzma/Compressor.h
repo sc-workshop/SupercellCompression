@@ -80,7 +80,7 @@ namespace sc
 				uint64_t affinity = 0;
 
 				/* If positive, writes the file length to a 64-bit integer, otherwise to a 32-bit integer */
-				unsigned use_long_unpacked_length = true;
+				bool use_long_unpacked_length = true;
 			};
 
 		public:

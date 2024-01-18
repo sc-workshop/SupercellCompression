@@ -8,6 +8,9 @@ namespace sc
 		class DecompressionInterface
 		{
 		public:
+			virtual ~DecompressionInterface() = default;
+
+		public:
 			virtual void decompress_stream(Stream& input, Stream& output) = 0;
 		};
 	}
