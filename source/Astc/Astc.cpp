@@ -1,5 +1,3 @@
-#pragma once
-
 #include <astcenc.h>
 
 #include "SupercellCompression/Astc.h"

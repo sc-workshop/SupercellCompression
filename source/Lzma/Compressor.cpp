@@ -18,8 +18,6 @@ namespace sc
 		{
 			free(address);
 		}
-
-		const void* LzmaAlloc[] = { &lzma_alloc , &lzma_free };
 	}
 }
 
@@ -57,9 +55,11 @@ namespace sc
 {
 	namespace Compressor
 	{
+		const void* LzmaAlloc[] = { (void*)&sc::lzma::lzma_alloc, (void*)&sc::lzma::lzma_free };
+
 		Lzma::Lzma(Props& props)
 		{
-			m_context = LzmaEnc_Create((ISzAllocPtr)&lzma::LzmaAlloc);
+			m_context = LzmaEnc_Create((ISzAllocPtr)&LzmaAlloc);
 			if (!m_context)
 			{
 				throw LzmaCompressInitException();
@@ -99,12 +99,12 @@ namespace sc
 			outWrap.vt.Write = LzmaStreamWrite;
 			outWrap.output = &output;
 
-			LzmaEnc_Encode(m_context, &outWrap.vt, &inWrap.vt, nullptr, (ISzAllocPtr)&lzma::LzmaAlloc, (ISzAllocPtr)&lzma::LzmaAlloc);
+			LzmaEnc_Encode(m_context, &outWrap.vt, &inWrap.vt, nullptr, (ISzAllocPtr)&LzmaAlloc, (ISzAllocPtr)&LzmaAlloc);
 		}
 
 		Lzma::~Lzma()
 		{
-			LzmaEnc_Destroy(m_context, (ISzAllocPtr)&lzma::LzmaAlloc, (ISzAllocPtr)&lzma::LzmaAlloc);
+			LzmaEnc_Destroy(m_context, (ISzAllocPtr)&LzmaAlloc, (ISzAllocPtr)&LzmaAlloc);
 		}
 	}
 }

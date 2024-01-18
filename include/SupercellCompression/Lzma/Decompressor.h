@@ -1,10 +1,14 @@
 #pragma once
+
+#include "SupercellCompression/Lzma.h"
 #include "SupercellCompression/interface/DecompressionInterface.h"
 
 namespace sc
 {
 	namespace Decompressor
 	{
+		struct LzmaDecompressContext;
+
 		class Lzma : public DecompressionInterface
 		{
 		public:
@@ -14,7 +18,7 @@ namespace sc
 			virtual void decompress_stream(Stream& input, Stream& output) override;
 
 		private:
-			CLzmaDecPtr m_context;
+			LzmaDecompressContext* m_context;
 			size_t m_unpacked_size;
 
 			uint8_t* m_input_buffer = nullptr;

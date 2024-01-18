@@ -19,54 +19,52 @@ set(LZHAM_DEC_SOURCE_DIR ${lzham_codec_SOURCE_DIR}/lzhamdecomp)
 set(LZHAM_CMP_SOURCE_DIR ${lzham_codec_SOURCE_DIR}/lzhamcomp)
 
 set(LZHAM_Compressor_Sources
-    "${LZHAM_CMP_SOURCE_DIR}/lzham_lzbase.cpp"
-    "${LZHAM_CMP_SOURCE_DIR}/lzham_lzbase.h"
-    "${LZHAM_CMP_SOURCE_DIR}/lzham_lzcomp.cpp"
-    "${LZHAM_CMP_SOURCE_DIR}/lzham_lzcomp_internal.cpp"
-    "${LZHAM_CMP_SOURCE_DIR}/lzham_lzcomp_internal.h"
-    "${LZHAM_CMP_SOURCE_DIR}/lzham_lzcomp_state.cpp"
-    "${LZHAM_CMP_SOURCE_DIR}/lzham_match_accel.cpp"
-    "${LZHAM_CMP_SOURCE_DIR}/lzham_match_accel.h"
-    "${LZHAM_CMP_SOURCE_DIR}/lzham_null_threading.h"
-    "${LZHAM_CMP_SOURCE_DIR}/lzham_pthreads_threading.cpp"
-    "${LZHAM_CMP_SOURCE_DIR}/lzham_threading.h"
+    ${LZHAM_CMP_SOURCE_DIR}/lzham_lzbase.cpp
+    ${LZHAM_CMP_SOURCE_DIR}/lzham_lzbase.h
+    ${LZHAM_CMP_SOURCE_DIR}/lzham_lzcomp.cpp
+    ${LZHAM_CMP_SOURCE_DIR}/lzham_lzcomp_internal.cpp
+    ${LZHAM_CMP_SOURCE_DIR}/lzham_lzcomp_internal.h
+    ${LZHAM_CMP_SOURCE_DIR}/lzham_lzcomp_state.cpp
+    ${LZHAM_CMP_SOURCE_DIR}/lzham_match_accel.cpp
+    ${LZHAM_CMP_SOURCE_DIR}/lzham_match_accel.h
+    ${LZHAM_CMP_SOURCE_DIR}/lzham_null_threading.h
+    ${LZHAM_CMP_SOURCE_DIR}/lzham_pthreads_threading.cpp
+    ${LZHAM_CMP_SOURCE_DIR}/lzham_threading.h
+
+    $<${SC_MSVC}: ${LZHAM_CMP_SOURCE_DIR}/lzham_win32_threading.cpp>
 )
 
 set(LZHAM_Decompressor_Sources
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_assert.cpp"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_assert.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_checksum.cpp"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_checksum.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_config.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_core.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_decomp.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_helpers.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_huffman_codes.cpp"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_huffman_codes.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_lzdecompbase.cpp"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_lzdecompbase.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_lzdecomp.cpp"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_math.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_mem.cpp"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_mem.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_platform.cpp"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_platform.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_prefix_coding.cpp"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_prefix_coding.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_symbol_codec.cpp"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_symbol_codec.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_timer.cpp"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_timer.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_traits.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_types.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_utils.h"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_vector.cpp"
-    "${LZHAM_DEC_SOURCE_DIR}/lzham_vector.h"
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_assert.cpp
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_assert.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_checksum.cpp
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_checksum.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_config.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_core.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_decomp.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_helpers.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_huffman_codes.cpp
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_huffman_codes.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_lzdecompbase.cpp
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_lzdecompbase.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_lzdecomp.cpp
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_math.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_mem.cpp
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_mem.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_platform.cpp
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_platform.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_prefix_coding.cpp
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_prefix_coding.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_symbol_codec.cpp
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_symbol_codec.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_timer.cpp
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_timer.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_traits.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_types.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_utils.h
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_vector.cpp
+    ${LZHAM_DEC_SOURCE_DIR}/lzham_vector.h
 )
-
-if(SC_MSVC)
-    list(APPEND LZHAM_Compressor_Sources ${LZHAM_CMP_SOURCE_DIR}/lzham_win32_threading.cpp)
-endif()
 
 add_library("lzhamlib" STATIC
     ${LZHAM_Compressor_Sources}

@@ -11,36 +11,30 @@ namespace sc
 {
 	namespace Decompressor
 	{
+		struct LzmaDecompressContext : public CLzmaDec {};
+
+		const void* LzmaAlloc[] = { (void*)&sc::lzma::lzma_alloc, (void*)&sc::lzma::lzma_free };
+
 		Lzma::Lzma(uint8_t header[lzma::PROPS_SIZE], const uint64_t unpackedSize) : m_unpacked_size(unpackedSize)
 		{
-			m_context = new CLzmaDec();
-			LzmaDec_Construct((CLzmaDec*)m_context);
+			m_context = new LzmaDecompressContext();
+			LzmaDec_Construct(m_context);
 
-			SRes res = LzmaDec_Allocate((CLzmaDec*)m_context, header, LZMA_PROPS_SIZE, (ISzAllocPtr)&lzma::LzmaAlloc);
+			SRes res = LzmaDec_Allocate(m_context, header, LZMA_PROPS_SIZE, (ISzAllocPtr)&LzmaAlloc);
 			if (res != SZ_OK)
 			{
 				throw LzmaDecompressInitException();
 			}
 
-			LzmaDec_Init((CLzmaDec*)m_context);
+			LzmaDec_Init(m_context);
 
-			m_input_buffer = (uint8_t*)malloc(Lzma::Stream_Size);
-			if (!m_input_buffer)
-			{
-				throw MemoryAllocationException(Lzma::Stream_Size);
-			}
-
-			m_output_buffer = (uint8_t*)malloc(Lzma::Stream_Size);
-			if (!m_output_buffer)
-			{
-				if (m_input_buffer) { free(m_input_buffer); }
-				throw MemoryAllocationException(Lzma::Stream_Size);
-			}
+			m_input_buffer = memalloc(Lzma::Stream_Size);
+			m_output_buffer = memalloc(Lzma::Stream_Size);
 		}
 
 		void Lzma::decompress_stream(Stream& input, Stream& output)
 		{
-			bool has_strict_bound = (m_unpacked_size != UINT32_MAX && m_unpacked_size != UINT64_MAX);
+			bool has_strict_bound = (m_unpacked_size != SIZE_MAX / 2) && (m_unpacked_size != SIZE_MAX);
 
 			size_t in_position = 0, input_size = 0, out_position = 0;
 			while (true)
@@ -63,7 +57,7 @@ namespace sc
 						finishMode = LZMA_FINISH_END;
 					}
 
-					res = LzmaDec_DecodeToBuf((CLzmaDec*)m_context, m_output_buffer + out_position, &out_processed,
+					res = LzmaDec_DecodeToBuf(m_context, m_output_buffer + out_position, &out_processed,
 						m_input_buffer + in_position, &in_processed, finishMode, &status);
 					in_position += in_processed;
 					out_position += out_processed;
@@ -92,7 +86,7 @@ namespace sc
 
 		Lzma::~Lzma()
 		{
-			LzmaDec_Free((CLzmaDec*)m_context, (ISzAllocPtr)&lzma::LzmaAlloc);
+			LzmaDec_Free(m_context, (ISzAllocPtr)&LzmaAlloc);
 
 			if (m_input_buffer)
 			{

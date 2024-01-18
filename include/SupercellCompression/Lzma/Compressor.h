@@ -17,7 +17,7 @@ namespace sc
 				int level = 5;
 
 				/* (1 << 12) <= dictSize <= (1 << 27) for 32-bit version */
-				/* (1 << 12) <= dictSize <= (3 << 29) for 64-bit version * /
+				/* (1 << 12) <= dictSize <= (3 << 29) for 64-bit version */
 				/*
 					The maximum value for dictionary size is 1 GB = 2^30 bytes.
 					Dictionary size is calculated as DictionarySize = 2^N bytes.

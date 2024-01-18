@@ -4,6 +4,7 @@
 
 #include "exception/MemoryAllocationException.h"
 #include "SupercellCompression/exception/Zstd.h"
+#include "memory/alloc.h"
 
 namespace sc
 {
@@ -24,18 +25,8 @@ namespace sc
 				throw ZstdDecompressInitException();
 			}
 
-			m_input_buffer = (uint8_t*)malloc(Input_Buffer_Size);
-			if (!m_input_buffer)
-			{
-				throw MemoryAllocationException(Input_Buffer_Size);
-			}
-
-			m_output_buffer = (uint8_t*)malloc(Output_Buffer_Size);
-			if (!m_output_buffer)
-			{
-				if (m_input_buffer) { free(m_input_buffer); }
-				throw MemoryAllocationException(Output_Buffer_Size);
-			}
+			m_input_buffer = memalloc(Input_Buffer_Size);
+			m_output_buffer = memalloc(Output_Buffer_Size);
 		}
 
 		void Zstd::decompress_stream(Stream& input, Stream& output)

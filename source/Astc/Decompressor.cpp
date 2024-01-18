@@ -50,17 +50,11 @@ namespace sc
 				&config
 			);
 
-			if (status != ASTCENC_SUCCESS)
-			{
-				// TODO: exception
-			}
+			if (status != ASTCENC_SUCCESS) throw AstcGeneralException(status);
 
 			status = astcenc_context_alloc(&config, props.threads_count, &m_context);
 
-			if (status != ASTCENC_SUCCESS)
-			{
-				// TODO: exception
-			}
+			if (status != ASTCENC_SUCCESS) throw AstcGeneralException(status);
 		}
 
 		Astc::~Astc()
@@ -92,7 +86,7 @@ namespace sc
 			if (status != ASTCENC_SUCCESS)
 			{
 				free(data);
-				// TODO: exceptions
+				throw AstcGeneralException(status);
 				return;
 			}
 

@@ -61,7 +61,7 @@ namespace sc {
 							hash_info_field_size = 8;
 
 							strings_ptr = &asset_info_ptr[strings_data_offset - *(uint32_t*)&asset_info_ptr[strings_data_offset]];
-							strings_info_field_size = *(char*)(string_data_ptr[info_field_size]);
+							strings_info_field_size = *(uint8_t*)(string_data_ptr + info_field_size);
 						}
 						else
 						{
@@ -87,7 +87,7 @@ namespace sc {
 
 						strings_ptr = &strings_array_data_offset[-*(uint16_t*)strings_array_data_offset];
 
-						strings_info_field_size = strings_array_data_offset[info_field_size];
+						strings_info_field_size = *(uint16_t*)(strings_array_data_offset + info_field_size);
 
 						asset_total_count = *(uint16_t*)(asset_info_ptr - info_field_size);
 						unknown_bool = true;

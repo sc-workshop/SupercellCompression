@@ -50,14 +50,17 @@ namespace sc
 		Astc::Astc(Props& props)
 		{
 			m_config = new astcenc_config();
-			astcenc_error status;
-			status = astcenc_config_init(
+			astcenc_error status = astcenc_config_init(
 				(astcenc_profile)props.profile,
 				props.blocks_x, props.blocks_y, 1,
 				float(props.quality), 0, m_config
 			);
 
+			if (status != astcenc_error::ASTCENC_SUCCESS) throw AstcGeneralException(status);
+
 			status = astcenc_context_alloc(m_config, props.threads_count, &m_context);
+
+			if (status != astcenc_error::ASTCENC_SUCCESS) throw AstcGeneralException(status);
 		};
 
 		Astc::~Astc()
@@ -93,7 +96,7 @@ namespace sc
 			if (status != ASTCENC_SUCCESS)
 			{
 				free(data);
-				throw AstcCompressException();
+				throw AstcGeneralException(status);
 			}
 
 			output.write(data, data_size);

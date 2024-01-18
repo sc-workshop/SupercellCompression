@@ -1,5 +1,7 @@
 include(FetchContent)
 
+set(TARGET "SupercellCompression")
+
 set(Compression_Headers
     "include/SupercellCompression.h"
 
@@ -52,7 +54,7 @@ set(Compression_Source
     "source/Image/KhronosTexture.cpp"
 )
 
-add_library("SupercellCompression" STATIC ${Compression_Source} ${Compression_Headers})
+add_library(${TARGET} STATIC ${Compression_Source} ${Compression_Headers})
 source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${Compression_Source} ${Compression_Headers})
 
 # Core Setup
@@ -63,8 +65,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(SupercellCore)
 
-sc_core_base_setup("SupercellCompression")
-set_target_properties("SupercellCompression" PROPERTIES
+#include("${SupercellCore_SOURCE_DIR}/cmake/constants.cmake")
+sc_core_base_setup(${TARGET})
+set_target_properties(${TARGET} PROPERTIES
     FOLDER Supercell
 )
 
@@ -89,16 +92,29 @@ set_target_properties("libzstd_static" PROPERTIES
 )
 
 message("-- ASTC Encoder --")
-set(ISA_SSE41 ON)
-set(CLI OFF)
+
+if (MSVC)
+
+set(ASTC_PREFIX "sse4.1")
+set(ASTCENC_ISA_SSE41 ON)
+
+else()
+
+set(ASTC_PREFIX "native")
+set(ASTCENC_ISA_NATIVE ON)
+
+endif()
+
+set(ASTCENC_SHAREDLIB OFF)
+set(ASTCENC_CLI OFF)
 
 FetchContent_Declare(
     astcenc
     GIT_REPOSITORY https://github.com/ARM-software/astc-encoder
-    GIT_TAG 7e2a81ed5abc202c6f06be9302d193ba44a765c9 # 3.5
+    GIT_TAG 1a51f2915121275038677317c8bf61f1a78b590c # 4.7.0
 )
 FetchContent_MakeAvailable(astcenc)
-set_target_properties("astcenc-sse4.1-static" PROPERTIES
+set_target_properties("astcenc-${ASTC_PREFIX}-static" PROPERTIES
     FOLDER Compression
 )
 
@@ -112,16 +128,16 @@ set_target_properties("lzhamlib" PROPERTIES
     FOLDER Compression
 )
 
-target_include_directories("SupercellCompression" PUBLIC
+target_include_directories(${TARGET} PUBLIC
     "include/"
 )
 
-target_link_libraries("SupercellCompression" PUBLIC
+target_link_libraries(${TARGET} PUBLIC
     SupercellCore
 )
 
 target_include_directories(
-    "SupercellCompression" PRIVATE
+    ${TARGET} PRIVATE
 
     ${astcenc_SOURCE_DIR}/Source
     ${lzham_codec_SOURCE_DIR}/include
@@ -130,10 +146,10 @@ target_include_directories(
 )
 
 target_link_libraries(
-    "SupercellCompression" PRIVATE
+    ${TARGET} PRIVATE
 
     libzstd_static
-    astcenc-sse4.1-static
+    astcenc-${ASTC_PREFIX}-static
     lzhamlib
     LzmaLib
 )

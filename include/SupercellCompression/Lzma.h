@@ -5,8 +5,6 @@
 #include "memory/alloc.h"
 
 #pragma region Forward Declaration
-
-typedef void* CLzmaDecPtr;
 typedef void* CLzmaEncHandle;
 
 #pragma endregion
@@ -23,7 +21,6 @@ namespace sc
 
 		void* lzma_alloc(void*, size_t size);
 		void lzma_free(void*, void* address);
-		const void* LzmaAlloc[];
 
 #pragma region Enums
 
