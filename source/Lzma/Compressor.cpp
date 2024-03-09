@@ -77,9 +77,10 @@ namespace sc
 
 		void Lzma::compress_stream(Stream& input, Stream& output)
 		{
+			SizeT header_length = lzma::PROPS_SIZE;
 			Byte header[lzma::PROPS_SIZE];
-			LzmaEnc_WriteProperties(m_context, (Byte*)header, (SizeT*)&lzma::PROPS_SIZE);
-			output.write(header, lzma::PROPS_SIZE);
+			LzmaEnc_WriteProperties(m_context, (Byte*)&header, (SizeT*)&header_length);
+			output.write(header, header_length);
 
 			size_t file_size = input.length() - input.position();
 			if (m_use_long_unpacked_data)
