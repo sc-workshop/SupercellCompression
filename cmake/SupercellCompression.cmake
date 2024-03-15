@@ -82,9 +82,9 @@ set(ZSTD_BUILD_PROGRAMS OFF)
 
 FetchContent_Declare(
     zstd
-    URL "https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-1.5.5.tar.gz"
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     SOURCE_SUBDIR build/cmake
+    URL "https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-1.5.5.tar.gz"
 )
 FetchContent_MakeAvailable(zstd)
 set_target_properties("libzstd_static" PROPERTIES

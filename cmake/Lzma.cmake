@@ -1,5 +1,5 @@
 # Custom CMake module for LZHAM
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.22)
 
 FetchContent_Declare(
     lzma_sdk
