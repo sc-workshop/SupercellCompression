@@ -271,7 +271,7 @@ namespace sc {
 					{
 						MemoryStream compressed_data(compressed_data_ptr + 4, compressed_data_length - 4);
 						Lzham::Props props;
-						props.dict_size_log2 = compressed_data.read_unsigned_int();
+						props.dict_size_log2 = compressed_data.read_unsigned_byte();
 						props.unpacked_length = compressed_data.read_unsigned_int();
 						sc::Decompressor::Lzham context(props);
 						context.decompress_stream(compressed_data, output);

@@ -12,7 +12,9 @@ namespace sc
 		public:
 			struct Props
 			{
-				uint32_t struct_size = sizeof(Props);
+				Props();
+
+				uint32_t struct_size;
 				uint32_t dict_size_log2 = lzham::MIN_DICT_SIZE_LOG2;         // set to the log2(dictionary_size), must range between [MIN_DICT_SIZE_LOG2, MAX_DICT_SIZE_LOG2_X86] for x86 LZHAM_MAX_DICT_SIZE_LOG2_X64 for x64
 				uint32_t table_update_rate = 0;								 // Controls tradeoff between ratio and decompression throughput. 0=default, or [1,LZHAM_MAX_TABLE_UPDATE_RATE], higher=faster but lower ratio.
 				uint32_t decompress_flags = 0;								 // optional decompression flags (see lzham_decompress_flags enum)

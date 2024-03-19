@@ -75,6 +75,7 @@ namespace sc {
 					props.lp = 0;
 					props.threads = context.threads_count > 1 ? 2 : 1;
 					props.dict_size = 262144;
+					props.use_long_unpacked_length = false;
 
 					if (input.length() > 1 << 28)
 						props.lc = 4;
@@ -86,7 +87,7 @@ namespace sc {
 
 				case Signature::Lzham:
 				{
-					const uint8_t dictionary_size = 18;
+					const uint32_t dictionary_size = 18;
 
 					output.write_unsigned_int(SCLZ_MAGIC);
 					output.write_unsigned_byte(dictionary_size);

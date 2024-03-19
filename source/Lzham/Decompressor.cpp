@@ -10,6 +10,11 @@ namespace sc
 {
 	namespace Decompressor
 	{
+		Lzham::Props::Props()
+		{
+			struct_size = sizeof(lzham_decompress_params);
+		}
+
 		Lzham::Lzham(Props& props)
 		{
 			m_state = lzham_decompress_init((lzham_decompress_params*)&props);
