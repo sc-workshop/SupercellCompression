@@ -144,6 +144,7 @@ namespace sc
 		uint16_t level_width = m_width / (uint16_t)pow(2, level_index);
 		uint16_t level_height = m_height / (uint16_t)pow(2, level_index);
 
+		buffer->seek(0);
 		switch (compression_type())
 		{
 		case KhronosTextureCompression::ASTC:
