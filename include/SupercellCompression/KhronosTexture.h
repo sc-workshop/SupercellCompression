@@ -138,6 +138,22 @@ namespace sc
 
 		void reset_level_data(uint32_t level_index);
 
+	public:
+		glInternalFormat internal_format() const
+		{
+			return m_internal_format;
+		}
+
+		glFormat format() const
+		{
+			return m_format;
+		}
+
+		glType type() const
+		{
+			return m_type;
+		}
+
 	private:
 		/// <summary>
 		/// Reads KTX header
