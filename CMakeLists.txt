@@ -1,10 +1,33 @@
 ﻿cmake_minimum_required(VERSION 3.22)
 
-option(SC_COMPRESSION_CLI "Build CLI for Supercell Compression" OFF)
 
-project("SupercellCompression")
-include(cmake/SupercellCompression.cmake)
+# workspace
+project(supercell-sdk)
 
-if(${SC_COMPRESSION_CLI})
-    include(cmake/CLI.cmake)
+# options
+option(SC_COMPRESSION_BUILD_SHARED "Build supercell::compression library as shared library" OFF)
+
+option(SC_COMPRESSION_BUILD_CLI "Build CLI version of supercell::compression library" OFF)
+option(SC_COMPRESSION_BUILD_GUI "Build GUI version of supercell::compression library" OFF)
+
+
+# lets force C++17
+set(CMAKE_CXX_STANDARD 17)
+
+# includes
+include(FetchContent)
+
+include(cmake/dependencies.cmake)
+
+
+# projects
+add_subdirectory(supercell-compression)
+
+if(SC_COMPRESSION_BUILD_CLI)
+    add_subdirectory(cli-tool)
 endif()
+
+if(SC_COMPRESSION_BUILD_GUI)
+    add_subdirectory(gui-tool)
+endif()
+
