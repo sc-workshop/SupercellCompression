@@ -17,5 +17,3 @@ cmake_install.cmake
 Debug/
 Release/
 x64/
-
-cli-tool/
