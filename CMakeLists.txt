@@ -7,8 +7,7 @@ project(supercell-sdk)
 # options
 option(SC_COMPRESSION_BUILD_SHARED "Build supercell::compression library as shared library" OFF)
 
-option(SC_COMPRESSION_BUILD_CLI "Build CLI version of supercell::compression library" OFF)
-option(SC_COMPRESSION_BUILD_GUI "Build GUI version of supercell::compression library" OFF)
+option(SC_COMPRESSION_BUILD_CLI "Build CLI version of supercell::compression library" ON)
 
 
 # lets force C++17
@@ -26,8 +25,3 @@ add_subdirectory(supercell-compression)
 if(SC_COMPRESSION_BUILD_CLI)
     add_subdirectory(cli-tool)
 endif()
-
-if(SC_COMPRESSION_BUILD_GUI)
-    add_subdirectory(gui-tool)
-endif()
-

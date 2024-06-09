@@ -1,4 +1,4 @@
-#include "compression/backend/decompressor_interface.h"
+#include "compression/backend/interface/decompressor_interface.h"
 
 #include "compression/backend/lzham/lzham.h"
 

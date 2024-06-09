@@ -1,6 +1,6 @@
 #pragma once
 
-#include "compression/backend/compressor_interface.h"
+#include "compression/backend/interface/compressor_interface.h"
 
 #include "compression/backend/zstd/zstd.h"
 

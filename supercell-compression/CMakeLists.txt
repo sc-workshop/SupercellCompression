@@ -38,7 +38,8 @@ sc_project_setup(${TARGET})
 include(cmake/lzma.cmake)
 include(cmake/lzham.cmake)
 include(cmake/zstd.cmake)
+include(cmake/astc.cmake)
 
-target_include_directories(${TARGET} PRIVATE ${lzma-sdk_SOURCE_DIR}/C ${lzham_codec_SOURCE_DIR}/include ${zstd_SOURCE_DIR}/lib)
+target_include_directories(${TARGET} PRIVATE ${lzma-sdk_SOURCE_DIR}/C ${lzham_codec_SOURCE_DIR}/include ${zstd_SOURCE_DIR}/lib ${astcenc_SOURCE_DIR}/Source)
 
-target_link_libraries(${TARGET} PRIVATE lzma-lib lzham-lib libzstd_static)
+target_link_libraries(${TARGET} PRIVATE lzma-lib lzham-lib libzstd_static astcenc-${ASTC_PREFIX}-static)

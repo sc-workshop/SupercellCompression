@@ -1,7 +1,7 @@
 #pragma once
 
 #include "compression/backend/lzma/lzma.h"
-#include "compression/backend/decompressor_interface.h"
+#include "compression/backend/interface/decompressor_interface.h"
 
 namespace sc
 {
@@ -14,7 +14,7 @@ namespace sc
 		LzmaDecompressor(std::uint8_t header[lzma::PROPS_SIZE], const uint64_t unpacked_size);
 		~LzmaDecompressor();
 
-		virtual void decompress(Stream& input, Stream& output) override;
+		void decompress(Stream& input, Stream& output) override;
 
 	private:
 		LzmaDecompressContext* m_context;
