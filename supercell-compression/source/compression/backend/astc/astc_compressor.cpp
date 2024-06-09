@@ -16,13 +16,11 @@ namespace sc
 		output.write_unsigned_byte(props.blocks_y);
 		output.write_unsigned_byte(1);
 
-		std::uint32_t width = width;
-		std::uint32_t height = height;
-		std::uint32_t z_dimension = 1;
-
 		// '24-bit' integers for width / height
 		output.write(&width, 3);
 		output.write(&height, 3);
+
+		std::uint32_t z_dimension = 1;
 		output.write(&z_dimension, 3);
 	}
 

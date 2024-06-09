@@ -24,6 +24,5 @@ namespace sc
 				return { ASTCENC_SWZ_R, ASTCENC_SWZ_G, ASTCENC_SWZ_B, ASTCENC_SWZ_A };
 			}
 		}
-		}
 	}
 }
