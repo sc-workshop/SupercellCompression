@@ -33,6 +33,7 @@ namespace
 
 int main(int argc, const char** argv)
 {
+	// Arguments
 	sc::ArgumentParser parser("supercell-compression-cli", "Tool for compress and decompress files using Supercell compression methods");
 
 	parser.add_argument("-d", "--decomrpess", "Decompress file(s)", false);
@@ -51,6 +52,7 @@ int main(int argc, const char** argv)
 	if (parser.exists("help"))
 		parser.print_help();
 
+	// Decompression
 	if (parser.exists("d"))
 	{
 		std::string raw_files = parser.get<std::string>("d");
@@ -60,15 +62,23 @@ int main(int argc, const char** argv)
 
 		for (const auto& file : files_to_decompress)
 		{
-			sc::InputFileStream compressed_file(file);
-			sc::OutputFileStream decompressed_file(file + ".dec");
+			try
+			{
+				sc::InputFileStream compressed_file(file);
+				sc::OutputFileStream decompressed_file(file + "-dec");
 
-			std::cout << "Decompressing " << file << "..." << std::endl;
+				std::cout << "Decompressing " << file << "..." << std::endl;
 
-			decompressor.decompress(compressed_file, decompressed_file);
+				decompressor.decompress(compressed_file, decompressed_file);
+			}
+			catch (sc::Exception& exc)
+			{
+				std::cout << "Error! " << exc.what() << std::endl;
+			}
 		}
 	}
 
+	// Compression
 	if (parser.exists("c"))
 	{
 		sc::Signature signature = sc::Signature::Zstandard;
@@ -125,12 +135,19 @@ int main(int argc, const char** argv)
 
 		for (const auto& file : files_to_compress)
 		{
-			sc::InputFileStream compressed_file(file);
-			sc::OutputFileStream decompressed_file(file + ".comp");
+			try
+			{
+				sc::InputFileStream compressed_file(file);
+				sc::OutputFileStream decompressed_file(file + "-comp");
 
-			std::cout << "Compressing " << file << "..." << std::endl;
+				std::cout << "Compressing " << file << "..." << std::endl;
 
-			compressor.compress(compressed_file, decompressed_file, context);
+				compressor.compress(compressed_file, decompressed_file, context);
+			}
+			catch (sc::Exception& exc)
+			{
+				std::cout << "Error! " << exc.what() << std::endl;
+			}
 		}
 	}
 
