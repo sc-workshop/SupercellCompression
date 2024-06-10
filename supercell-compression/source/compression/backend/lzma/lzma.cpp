@@ -19,4 +19,6 @@ namespace sc
 			Memory::free(address);
 		}
 	}
+
+	const void* LzmaAlloc[] = { (void*)&lzma::lzma_alloc, (void*)&lzma::lzma_free };
 }

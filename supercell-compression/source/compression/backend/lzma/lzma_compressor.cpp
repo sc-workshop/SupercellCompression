@@ -37,8 +37,6 @@ static std::size_t LzmaStreamWrite(const ISeqOutStream* p, const void* buf, std:
 
 namespace sc
 {
-	const void* LzmaAlloc[] = { (void*)&sc::lzma::lzma_alloc, (void*)&sc::lzma::lzma_free };
-
 	LzmaCompressor::LzmaCompressor(Props& props)
 	{
 		m_context = LzmaEnc_Create((ISzAllocPtr)&LzmaAlloc);

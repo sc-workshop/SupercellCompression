@@ -9,8 +9,6 @@ namespace sc
 {
 	struct LzmaDecompressContext : public CLzmaDec {};
 
-	const void* LzmaAlloc[] = { (void*)&sc::lzma::lzma_alloc, (void*)&sc::lzma::lzma_free };
-
 	LzmaDecompressor::LzmaDecompressor(uint8_t header[lzma::PROPS_SIZE], const uint64_t unpackedSize) : m_unpacked_size(unpackedSize)
 	{
 		m_context = new LzmaDecompressContext();

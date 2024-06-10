@@ -26,4 +26,6 @@ namespace sc
 			BinTree
 		};
 	}
+
+	const void* LzmaAlloc[];
 }
