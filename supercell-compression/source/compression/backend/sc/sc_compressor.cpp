@@ -1,4 +1,4 @@
-#include "sc_compressor.h"
+#include "compression/backend/sc/sc_compressor.h"
 
 #include "compression/backend/lzma/lzma_compressor.h"
 #include "compression/backend/lzham/lzham_compressor.h"
@@ -17,7 +17,7 @@ namespace sc
 			{
 				output.write_unsigned_short(SC_MAGIC);
 
-				if (context.write_assets)
+				if (context.contains_metadata)
 				{
 					output.write_int(4, Endian::Big);
 				}
@@ -102,14 +102,6 @@ namespace sc
 				}
 				break;
 				}
-
-				// TODO(pavidloq): generate metadata
-				/*
-				if (context.write_assets)
-				{
-					write_metadata(output);
-				}
-				*/
 			}
 		}
 	}

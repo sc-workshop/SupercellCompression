@@ -4,6 +4,7 @@
 #include "compression/backend/lzham/lzham.h"
 
 #include <core/preprocessor/api.h>
+
 #include <thread>
 
 namespace sc
@@ -21,12 +22,12 @@ namespace sc
 
 			std::uint32_t struct_size = sizeof(Props);
 			std::uint32_t dict_size_log2 = lzham::MIN_DICT_SIZE_LOG2; // set to the log2(dictionary_size), must range between [MIN_DICT_SIZE_LOG2, MAX_DICT_SIZE_LOG2_X86] for x86 MAX_DICT_SIZE_LOG2_X64 for x64
-			lzham::Level level = lzham::Level::Default;          // set to FASTEST, etc.
-			std::uint32_t table_update_rate = 0;						 // Controls tradeoff between ratio and decompression throughput. 0=default, or [1,MAX_TABLE_UPDATE_RATE], higher=faster but lower ratio.
-			std::int32_t max_helper_threads = -1;					 // max # of additional "helper" threads to create, must range between [-1,MAX_HELPER_THREADS], where -1=max practical
-			std::uint32_t compress_flags = 0;						 // optional compression flags (see lzham_compress_flags enum)
-			std::uint32_t num_seed_bytes = 0;						 // for delta compression (optional) - number of seed bytes pointed to by 'seed'
-			const void* seed = nullptr;							 // for delta compression (optional) - pointer to seed bytes buffer, must be at least 'num_seed_bytes' long
+			lzham::Level level = lzham::Level::Default; // set to FASTEST, etc.
+			std::uint32_t table_update_rate = 0; // Controls tradeoff between ratio and decompression throughput. 0=default, or [1,MAX_TABLE_UPDATE_RATE], higher=faster but lower ratio.
+			std::int32_t max_helper_threads = -1; // max # of additional "helper" threads to create, must range between [-1,MAX_HELPER_THREADS], where -1=max practical
+			std::uint32_t compress_flags = 0; // optional compression flags (see lzham_compress_flags enum)
+			std::uint32_t num_seed_bytes = 0; // for delta compression (optional) - number of seed bytes pointed to by 'seed'
+			const void* seed = nullptr; // for delta compression (optional) - pointer to seed bytes buffer, must be at least 'num_seed_bytes' long
 
 			// Advanced settings - set to 0 if you don't care.
 			// table_max_update_interval/m_table_update_interval_slow_rate override m_table_update_rate and allow finer control over the table update settings.

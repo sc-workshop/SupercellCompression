@@ -5,8 +5,6 @@ namespace sc
 		class ScCommandLineInterface : public CommandLineInterface
 		{
 		public:
-			bool print_metadata = false;
-
 			static void initialize(sc::ArgumentParser& parser)
 			{
 				parser.add_argument("-scm", "--sc-print-metadata")
@@ -14,38 +12,11 @@ namespace sc
 					.help("Print metadata from .sc to console when selected decompress mode");
 			}
 
-			virtual void parse(sc::ArgumentParser& parser)
-			{
-				print_metadata = parser["--sc-print-metadata"] == true;
-			}
+			virtual void parse(sc::ArgumentParser& parser) { }
 
 			virtual void decompress(sc::Stream& input, sc::Stream& output) 
 			{
-				if (print_metadata)
-				{
-					flash::MetadataAssetArray array;
-					flash::Decompressor::decompress(input, output, array);
-
-					if (array.size())
-					{
-						std::cout << "Metadata list: " << std::endl;
-
-						for (flash::MetadataAsset& asset : array)
-						{
-							std::cout << "Name: " << asset.name << ", Hash: ";
-							for (char& byte : asset.hash)
-							{
-								std::cout << std::setfill('0') << std::setw(2) << std::hex << (0xff & (unsigned int)byte);
-							}
-
-							std::cout << std::endl;
-						}
-					}
-				}
-				else
-				{
-					flash::Decompressor::decompress(input, output);
-				}
+				flash::Decompressor::decompress(input, output);
 			}
 
 			virtual void compress(sc::Stream& input, sc::Stream& output, Method method)

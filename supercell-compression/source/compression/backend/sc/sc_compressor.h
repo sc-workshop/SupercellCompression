@@ -1,10 +1,11 @@
 #pragma once
 
-#include "signature.h"
+#include "compression/backend/sc/signature.h"
+
+#include <core/preprocessor/api.h>
+#include <core/io/stream.h>
 
 #include <thread>
-#include <core/io/stream.h>
-#include <core/preprocessor/api.h>
 
 namespace sc
 {
@@ -18,8 +19,7 @@ namespace sc
 				{
 					Signature signature = Signature::Zstandard;
 
-					bool write_assets = false;
-					// TODO(pavidloq): metadata generation
+					bool contains_metadata = false;
 
 					uint32_t threads_count = std::thread::hardware_concurrency() <= 0 ? 1 : std::thread::hardware_concurrency();
 				};
