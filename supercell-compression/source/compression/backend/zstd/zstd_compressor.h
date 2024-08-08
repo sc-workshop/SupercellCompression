@@ -1,14 +1,14 @@
 #pragma once
 
 #include "compression/backend/interface/compressor_interface.h"
-
 #include "compression/backend/zstd/zstd.h"
 
+#include <core/preprocessor/api.h>
 #include <thread>
 
 namespace sc
 {
-	class ZstdCompressor : CompressorInterface
+	class SUPERCELL_API ZstdCompressor : CompressorInterface
 	{
 	public:
 		struct Props

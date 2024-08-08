@@ -3,11 +3,12 @@
 #include "compression/backend/lzma/lzma.h"
 #include "compression/backend/interface/compressor_interface.h"
 
+#include <core/preprocessor/api.h>
 #include <thread>
 
 namespace sc
 {
-	class LzmaCompressor : CompressorInterface
+	class SUPERCELL_API LzmaCompressor : CompressorInterface
 	{
 	public:
 		struct Props

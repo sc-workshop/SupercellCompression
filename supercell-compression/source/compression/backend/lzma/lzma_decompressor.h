@@ -3,10 +3,12 @@
 #include "compression/backend/lzma/lzma.h"
 #include "compression/backend/interface/decompressor_interface.h"
 
+#include <core/preprocessor/api.h>
+
 namespace sc
 {
 	// forward declare
-	struct LzmaDecompressContext;
+	struct SUPERCELL_API LzmaDecompressContext;
 
 	class LzmaDecompressor : DecompressorInterface
 	{

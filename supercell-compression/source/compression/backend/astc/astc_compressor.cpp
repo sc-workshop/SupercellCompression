@@ -34,12 +34,12 @@ namespace sc
 		);
 
 		if (status != astcenc_error::ASTCENC_SUCCESS)
-			throw Exception("ASTC exception! %d", (int)status);
+			throw Exception("Failed to init ASTC with code %d", (int)status);
 
 		status = astcenc_context_alloc(m_config, props.threads_count, &m_context);
 
 		if (status != astcenc_error::ASTCENC_SUCCESS)
-			throw Exception("ASTC exception! %d", (int)status);
+			throw Exception("Failed to allocate ASTC context with code %d", (int)status);
 	}
 
 	ASTCCompressor::~ASTCCompressor()
@@ -78,7 +78,7 @@ namespace sc
 		if (status != ASTCENC_SUCCESS)
 		{
 			Memory::free(data);
-			throw Exception("ASTC exception! %d", (int)status);
+			throw Exception("Failed to ASTC compress data with code %d", (int)status);
 		}
 
 		output.write(data, data_size);

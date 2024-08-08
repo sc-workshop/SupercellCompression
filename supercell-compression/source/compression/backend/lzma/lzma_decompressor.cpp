@@ -17,7 +17,7 @@ namespace sc
 		SRes res = LzmaDec_Allocate(m_context, header, LZMA_PROPS_SIZE, (ISzAllocPtr)&LzmaAlloc);
 		if (res != SZ_OK)
 		{
-			throw Exception("Failed to initalize LZMA decompression!");
+			throw Exception("Failed to allocate LZMA compress context with code %d", res);
 		}
 
 		LzmaDec_Init(m_context);

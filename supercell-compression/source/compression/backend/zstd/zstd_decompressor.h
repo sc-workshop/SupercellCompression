@@ -1,8 +1,9 @@
 #pragma once
 
 #include "compression/backend/interface/decompressor_interface.h"
-
 #include "compression/backend/zstd/zstd.h"
+
+#include <core/preprocessor/api.h>
 
 namespace sc
 {

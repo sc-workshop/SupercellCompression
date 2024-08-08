@@ -13,11 +13,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/jljusten/LZMA-SDK
     GIT_TAG 781863cdf592da3e97420f50de5dac056ad352a5
 )
-
-# populate lzma-sdk
-if(NOT lzma-sdk_POPULATED)
-    FetchContent_Populate(lzma-sdk)
-endif()
+FetchContent_MakeAvailable(lzma-sdk)
 
 # setup lzma-sdk sources
 set(LZMA_SDK_SOURCE_DIR ${lzma-sdk_SOURCE_DIR}/C)

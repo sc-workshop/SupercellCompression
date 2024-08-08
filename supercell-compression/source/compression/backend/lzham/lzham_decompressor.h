@@ -1,10 +1,13 @@
-#include "compression/backend/interface/decompressor_interface.h"
+#pragma once
 
+#include "compression/backend/interface/decompressor_interface.h"
 #include "compression/backend/lzham/lzham.h"
+
+#include <core/preprocessor/api.h>
 
 namespace sc
 {
-	class LzhamDecompressor : public DecompressorInterface
+	class SUPERCELL_API LzhamDecompressor : public DecompressorInterface
 	{
 	public:
 		struct Props

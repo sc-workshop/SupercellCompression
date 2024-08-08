@@ -23,5 +23,4 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/ARM-software/astc-encoder
     GIT_TAG 4.7.0
 )
-
 FetchContent_MakeAvailable(astcenc)

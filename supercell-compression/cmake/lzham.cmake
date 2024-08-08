@@ -13,11 +13,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/richgel999/lzham_codec.git
     GIT_TAG d379b1f9121e2197881c61cfc4713c78848bdfe7
 )
-
-# populate lzham
-if(NOT lzham_codec_POPULATED)
-    FetchContent_Populate(lzham_codec)
-endif()
+FetchContent_MakeAvailable(lzham_codec)
 
 # lzham sources
 set(LZHAM_DEC_SOURCE_DIR ${lzham_codec_SOURCE_DIR}/lzhamdecomp)

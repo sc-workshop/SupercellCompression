@@ -1,14 +1,14 @@
 #pragma once
 
 #include "compression/backend/interface/image_compressor_interface.h"
-
 #include "compression/backend/astc/astc.h"
 
+#include <core/preprocessor/api.h>
 #include <thread>
 
 namespace sc
 {
-	class ASTCCompressor : public ImageCompressorInterface
+	class SUPERCELL_API ASTCCompressor : public ImageCompressorInterface
 	{
 	public:
 		struct Props

@@ -42,14 +42,14 @@ namespace sc
 		m_context = LzmaEnc_Create((ISzAllocPtr)&LzmaAlloc);
 		if (!m_context)
 		{
-			throw Exception("Failed to initialize LZMA compression!");
+			throw Exception("Failed to allocate LZMA context!");
 		}
 
 		SRes res;
 		res = LzmaEnc_SetProps(m_context, (CLzmaEncProps*)&props);
 		if (res != SZ_OK)
 		{
-			throw Exception("Failed to initialize LZMA compression!");
+			throw Exception("Failed to initialize LZMA compression props with code %d", res);
 		}
 
 		m_use_long_unpacked_data = props.use_long_unpacked_length;

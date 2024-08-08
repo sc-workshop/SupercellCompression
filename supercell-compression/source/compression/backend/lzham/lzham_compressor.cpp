@@ -61,7 +61,7 @@ namespace sc
 				input_buffer_position = static_cast<uint32_t>(min(LzhamCompressor::sm_stream_size, remain_bytes));
 				if (input.read(m_input_buffer, input_buffer_position) != input_buffer_position)
 				{
-					throw Exception("corrupted LZHAM compressed data!");
+					throw Exception("Corrupted LZHAM compressed data!");
 				}
 
 				remain_bytes -= input_buffer_position;
