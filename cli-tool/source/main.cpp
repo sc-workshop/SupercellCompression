@@ -1,154 +1,219 @@
-#include "core/console/console.h"
+#include "main.h"
+#include "backend/interface.h"
 
-#include "core/io/file_stream.h"
+#include "backend/sc.hpp"
 
-#include "compression/decompressor.h"
-#include "compression/compressor.h"
+#include <core/memory/ref.h>
 
-#include "compression/signature.h"
-
-#include <algorithm>
-#include <cctype>
-
-#include <iostream>
+using namespace sc::compression;
 
 namespace
 {
-	// Split one string into array of strings by space
-	std::vector<std::string> split_into_vector(const std::string& input)
+	Mode string_to_mode(std::string mode)
 	{
-		std::vector<std::string> result;
-
-		int start = 0;
-		int end = 0;
-		while ((start = input.find_first_not_of(' ', end)) != std::string::npos)
+		if (mode == "compress")
 		{
-			end = input.find(' ', start);
-			result.push_back(input.substr(start, end - start));
+			return Mode::Compress;
+		}
+		else if (mode == "decompress")
+		{
+			return Mode::Decompress;
 		}
 
-		return result;
+		throw sc::Exception();
+	}
+
+	Container string_to_container(std::string container)
+	{
+		if (container == "none")
+		{
+			return Container::None;
+		}
+		else if (container == "sc")
+		{
+			return Container::SC;
+		}
+
+		throw sc::Exception();
+	}
+
+	Method string_to_method(std::string method)
+	{
+		if (method == "lzma")
+		{
+			return Method::LZMA;
+		}
+		else if (method == "lzham")
+		{
+			return Method::LZHAM;
+		}
+		else if (method == "zstd")
+		{
+			return Method::ZSTD;
+		}
+
+		throw sc::Exception();
+	}
+}
+
+namespace
+{
+	fs::path get_unique_name(fs::path basename, Mode mode, Method method, Container container)
+	{
+		//if (container == Container::SC)
+		//{
+		std::string prefix = "";
+		switch (mode)
+		{
+		case Mode::Decompress:
+			prefix = "d-";
+			break;
+		case Mode::Compress:
+			prefix = "c-";
+			break;
+		default:
+			break;
+		}
+
+		return fs::path(prefix).concat(basename.u16string());
+		//}
+	}
+
+	sc::Ref<CommandLineInterface> InterfaceFactrory(Method method, Container container)
+	{
+		if (container == Container::SC)
+		{
+			return sc::CreateRef<ScCommandLineInterface>();
+		}
+
+		throw sc::Exception("Failed to create interface!");
+	}
+}
+
+void supercell_compression_cli(sc::ArgumentParser& parser)
+{
+	Mode mode = string_to_mode(parser.get<std::string>("mode"));
+	Method method = string_to_method(parser.get<std::string>("--method"));
+	Container container = string_to_container(parser.get<std::string>("--container"));
+	std::vector<std::string> input_paths = parser.get<std::vector<std::string>>("--file");
+
+	bool custom_output = parser.get<std::string>("--output").empty() == false;
+	fs::path output = "";
+	if (custom_output)
+	{
+		output = fs::path(parser.get<std::string>("--output"));
+		if (output.is_relative())
+		{
+			output = fs::absolute(output);
+		}
+		if (!fs::exists(output) || !fs::is_directory(output))
+		{
+			fs::create_directory(output);
+		}
+	}
+
+	auto processor = InterfaceFactrory(method, container);
+	processor->parse(parser);
+
+	for (std::string& path_string : input_paths)
+	{
+		fs::path input_path = path_string;
+		if (fs::is_directory(input_path))
+		{
+			continue;
+		}
+
+		if (input_path.has_relative_path())
+		{
+			input_path = fs::absolute(input_path);
+		}
+
+		fs::path basename = custom_output ? input_path.filename() : get_unique_name(input_path.filename(), mode, method, container);
+		fs::path basedir = custom_output ? output : input_path.parent_path();
+		fs::path output_path = basedir / basename;
+
+		try
+		{
+			sc::InputFileStream input_file(input_path);
+			sc::OutputFileStream output_file(output_path);
+
+			switch (mode)
+			{
+			case Mode::Decompress:
+				processor->decompress(input_file, output_file);
+				std::cout << input_path.make_preferred() << " decompressed to " << output_path.make_preferred() << std::endl;
+				break;
+			case Mode::Compress:
+				processor->compress(input_file, output_file, method);
+				std::cout << input_path.make_preferred() << " compressed to " << output_path.make_preferred() << std::endl;
+				break;
+			default:
+				break;
+			}
+		}
+		catch (sc::Exception& exception)
+		{
+			std::cout << "Failed: " << input_path.make_preferred() << std::endl;
+			std::cout << "Reason: " << exception.what() << std::endl;
+		}
 	}
 }
 
 int main(int argc, const char** argv)
 {
+	fs::path executable = argv[0];
+	fs::path executable_name = executable.stem();
+
 	// Arguments
-	sc::ArgumentParser parser("supercell-compression-cli", "Tool for compress and decompress files using Supercell compression methods");
+	sc::ArgumentParser parser(executable_name.string(), "Tool for compress and decompress files using Supercell compression methods");
 
-	parser.add_argument("-d", "--decomrpess", "Decompress file(s)", false);
-	parser.add_argument("-c", "--comrpess", "Compress file(s)", false);
-	parser.add_argument("-m", "--method", "Sets compression method for \"-c\"/\"--compress\" operation. Possible values - lzma, lzham, zstd (default)", false);
+	parser.add_argument("mode")
+		.help("Possible values: compress, decompress")
+		.choices("compress", "decompress");
 
-	parser.enable_help();
+	parser.add_argument("-i", "--file")
+		.help("Input files")
+		.append();
 
-	auto err = parser.parse(argc, argv);
-	if (err)
-	{
-		std::cout << "Failed to parse command line arguments! Error: " << err.what() << std::endl;
-		return -1;
+	parser.add_argument("-c", "--container")
+		.help(" Sets container type for compression. Possible values: none, sc")
+		.choices("none", "sc")
+		.default_value("sc");
+
+	parser.add_argument("-m", "--method")
+		.help("Sets compression method for compress operation. Possible values: lzma, lzham, zstd")
+		.choices("lzma", "lzham", "zstd")
+		.default_value("zstd");
+
+	parser.add_argument("-o", "--output")
+		.help("save output to folder instead of changing extension or adding prefix")
+		.default_value("");
+
+	ScCommandLineInterface::initialize(parser);
+
+	try {
+		parser.parse_args(argc, argv);
 	}
-
-	if (parser.exists("help"))
+	catch (const std::exception& err) {
 		parser.print_help();
 
-	// Decompression
-	if (parser.exists("d"))
-	{
-		std::string raw_files = parser.get<std::string>("d");
-		std::vector<std::string> files_to_decompress = split_into_vector(raw_files);
-
-		sc::Decompressor decompressor;
-
-		for (const auto& file : files_to_decompress)
-		{
-			try
-			{
-				sc::InputFileStream compressed_file(file);
-				sc::OutputFileStream decompressed_file(file + "-dec");
-
-				std::cout << "Decompressing " << file << "..." << std::endl;
-
-				decompressor.decompress(compressed_file, decompressed_file);
-			}
-			catch (sc::Exception& exc)
-			{
-				std::cout << "Error! " << exc.what() << std::endl;
-			}
-		}
+		std::cout << "Error! " << err.what() << std::endl;
+		return 1;
 	}
 
-	// Compression
-	if (parser.exists("c"))
+	if (parser["--help"] == true || argc == 1)
 	{
-		sc::Signature signature = sc::Signature::Zstandard;
+		parser.print_help();
+		return 0;
+	}
 
-		if (parser.exists("m"))
-		{
-			std::string raw_methods = parser.get<std::string>("m");
-			std::vector<std::string> methods = split_into_vector(raw_methods);
-
-			if (methods.size() > 0)
-			{
-				if (methods.size() > 1)
-					std::cout << "Warning! More than 1 compression methods defined! Only the first specified argument will be used!" << std::endl;
-
-				// Get first string argument
-				std::string method = methods[0];
-				std::transform(method.begin(), method.end(), method.begin(), [](unsigned char c) {return std::tolower(c); }); // to lowercase
-
-				if (method == "lzma")
-				{
-					signature = sc::Signature::Lzma;
-					std::cout << "Using LZMA compression method." << std::endl;
-				}
-				else if (method == "lzham")
-				{
-					signature = sc::Signature::Lzham;
-					std::cout << "Using LZHAM compression method." << std::endl;
-				}
-				else if (method == "zstd")
-				{
-					signature = sc::Signature::Zstandard;
-					std::cout << "Using Zstandard compression method." << std::endl;
-				}
-				else
-				{
-					std::cout << "Unknown compression method!" << std::endl;
-				}
-			}
-			else
-			{
-				std::cout << "No compression methods is specified!" << std::endl;
-			}
-		}
-
-		std::cout << "Using default compression method." << std::endl;
-
-		std::string raw_files = parser.get<std::string>("c");
-		std::vector<std::string> files_to_compress = split_into_vector(raw_files);
-
-		sc::Compressor compressor;
-
-		sc::Compressor::Context context;
-		context.signature = signature;
-
-		for (const auto& file : files_to_compress)
-		{
-			try
-			{
-				sc::InputFileStream compressed_file(file);
-				sc::OutputFileStream decompressed_file(file + "-comp");
-
-				std::cout << "Compressing " << file << "..." << std::endl;
-
-				compressor.compress(compressed_file, decompressed_file, context);
-			}
-			catch (sc::Exception& exc)
-			{
-				std::cout << "Error! " << exc.what() << std::endl;
-			}
-		}
+	try
+	{
+		supercell_compression_cli(parser);
+	}
+	catch (sc::Exception& exception)
+	{
+		std::cout << "Unknown unexpected exception: " << exception.what() << std::endl;
 	}
 
 	return 0;

@@ -1,9 +1,9 @@
-# cli-tool
+# Project: supercell-compression cli-tool
 
 
 # C++ headers and source files
 file(GLOB_RECURSE HEADERS source/*.h)
-file(GLOB_RECURSE SOURCES source/*.cpp)
+file(GLOB_RECURSE SOURCES source/*.cpp source/*.hpp)
 
 set(CLI_TARGET supercell-compression-cli)
 
