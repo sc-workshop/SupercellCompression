@@ -4,6 +4,7 @@
 #include "compression/backend/interface/compressor_interface.h"
 
 #include <core/preprocessor/api.h>
+
 #include <thread>
 
 namespace sc

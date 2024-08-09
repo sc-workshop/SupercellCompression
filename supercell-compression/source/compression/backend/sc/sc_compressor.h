@@ -1,6 +1,9 @@
 #pragma once
 
-#include "signature.h"
+#include "compression/backend/sc/signature.h"
+
+#include <core/preprocessor/api.h>
+#include <core/io/stream.h>
 
 #include <thread>
 #include <core/memory/ref.h>

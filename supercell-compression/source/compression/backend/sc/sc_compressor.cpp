@@ -1,4 +1,4 @@
-#include "sc_compressor.h"
+#include "compression/backend/sc/sc_compressor.h"
 
 #include "compression/backend/lzma/lzma_compressor.h"
 #include "compression/backend/lzham/lzham_compressor.h"

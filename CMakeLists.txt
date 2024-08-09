@@ -5,8 +5,9 @@
 project(supercell-sdk)
 
 # options
-option(SC_COMPRESSION_BUILD_SHARED "Build supercell::compression library as shared library" OFF)
+option(SC_COMPRESSION_IN_SOURCE_BUILD "Enable in-source build of supercell::compression" ON)
 
+option(SC_COMPRESSION_BUILD_SHARED "Build supercell::compression library as shared library" OFF)
 option(SC_COMPRESSION_BUILD_CLI "Build CLI version of supercell::compression library" ON)
 
 

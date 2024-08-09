@@ -20,7 +20,7 @@ namespace
 			return Mode::Decompress;
 		}
 
-		throw sc::Exception();
+		throw sc::Exception("Wrong mode!");
 	}
 
 	Container string_to_container(std::string container)
@@ -34,7 +34,7 @@ namespace
 			return Container::SC;
 		}
 
-		throw sc::Exception();
+		throw sc::Exception("Wrong container!");
 	}
 
 	Method string_to_method(std::string method)
@@ -52,7 +52,7 @@ namespace
 			return Method::ZSTD;
 		}
 
-		throw sc::Exception();
+		throw sc::Exception("Wrong method!");
 	}
 }
 
@@ -68,9 +68,11 @@ namespace
 		case Mode::Decompress:
 			prefix = "d-";
 			break;
+
 		case Mode::Compress:
 			prefix = "c-";
 			break;
+
 		default:
 			break;
 		}
@@ -95,6 +97,7 @@ void supercell_compression_cli(sc::ArgumentParser& parser)
 	Mode mode = string_to_mode(parser.get<std::string>("mode"));
 	Method method = string_to_method(parser.get<std::string>("--method"));
 	Container container = string_to_container(parser.get<std::string>("--container"));
+
 	std::vector<std::string> input_paths = parser.get<std::vector<std::string>>("--file");
 
 	bool custom_output = parser.get<std::string>("--output").empty() == false;

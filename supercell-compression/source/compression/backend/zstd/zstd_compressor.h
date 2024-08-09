@@ -4,6 +4,7 @@
 #include "compression/backend/zstd/zstd.h"
 
 #include <core/preprocessor/api.h>
+
 #include <thread>
 
 namespace sc

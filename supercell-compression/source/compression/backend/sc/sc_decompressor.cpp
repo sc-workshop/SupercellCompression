@@ -1,6 +1,6 @@
-#include "sc_decompressor.h"
+#include "compression/backend/sc/sc_decompressor.h"
 
-#include "signature.h"
+#include "compression/backend/sc/signature.h"
 
 #include "compression/backend/lzma/lzma_decompressor.h"
 #include "compression/backend/lzham/lzham_decompressor.h"
@@ -8,6 +8,8 @@
 
 #include <core/exception/exception.h>
 #include <core/io/memory_stream.h>
+
+#include <vector>
 
 namespace sc
 {

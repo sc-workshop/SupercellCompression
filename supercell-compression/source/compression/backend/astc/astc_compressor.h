@@ -4,6 +4,7 @@
 #include "compression/backend/astc/astc.h"
 
 #include <core/preprocessor/api.h>
+
 #include <thread>
 
 namespace sc
