@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <core/preprocessor/api.h>
 #include <core/io/memory_stream.h>
 #include <core/io/stream.h>
@@ -12,9 +11,9 @@ namespace sc
 	{
 		namespace flash
 		{
-				static void decompress(Stream& input, Stream& output, sc::MemoryStream** metadata = nullptr);
+			struct SUPERCELL_API Decompressor
 			{
-				static void decompress(Stream& input, Stream& output, std::optional<MetadataAssetArray> metadata = std::nullopt);
+				static void decompress(Stream& input, Stream& output, sc::MemoryStream** metadata = nullptr);
 			};
 		}
 	}
