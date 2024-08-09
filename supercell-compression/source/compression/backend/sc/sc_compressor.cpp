@@ -17,7 +17,8 @@ namespace sc
 			{
 				output.write_unsigned_short(SC_MAGIC);
 
-				if (context.write_assets)
+				bool write_metadata = context.metadata != nullptr;
+				if (write_metadata)
 				{
 					output.write_int(4, Endian::Big);
 				}
@@ -103,13 +104,13 @@ namespace sc
 				break;
 				}
 
-				// TODO(pavidloq): generate metadata
-				/*
-				if (context.write_assets)
+				if (write_metadata)
 				{
-					write_metadata(output);
+					size_t metadata_length = context.metadata->length();
+					output.write(flash::SC_START, 5);
+					output.write(context.metadata->data(), metadata_length);
+					output.write_unsigned_int(metadata_length, Endian::Big);
 				}
-				*/
 			}
 		}
 	}

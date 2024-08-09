@@ -5,41 +5,42 @@ namespace sc
 		class ScCommandLineInterface : public CommandLineInterface
 		{
 		public:
-			bool print_metadata = false;
+			bool save_metadata = false;
+			std::vector<std::string> metadata_paths;
 
 			static void initialize(sc::ArgumentParser& parser)
 			{
-				parser.add_argument("-scm", "--sc-print-metadata")
-					.default_value(false)
-					.help("Print metadata from .sc to console when selected decompress mode");
+				parser.add_argument("-scsm", "--sc-save-metadata")
+					.flag()
+					.help("Save metadata to .metadata.flex while decompressing");
+
+				parser.add_argument("-scmi", "--sc-meta")
+					.append()
+					.help("Path to .metadata.flex to write while compressing");
 			}
 
 			virtual void parse(sc::ArgumentParser& parser)
 			{
-				print_metadata = parser["--sc-print-metadata"] == true;
+				save_metadata = parser.get<bool>("--sc-save-metadata");
+				metadata_paths = parser.get<std::vector<std::string>>("--sc-meta");
 			}
 
-			virtual void decompress(sc::Stream& input, sc::Stream& output) 
+			virtual void decompress(OperationContext& context, sc::Stream& input, sc::Stream& output)
 			{
-				if (print_metadata)
+				if (save_metadata)
 				{
-					flash::MetadataAssetArray array;
-					flash::Decompressor::decompress(input, output, array);
+					sc::MemoryStream* metadata = nullptr;
+					flash::Decompressor::decompress(input, output, &metadata);
 
-					if (array.size())
+					if (metadata != nullptr)
 					{
-						std::cout << "Metadata list: " << std::endl;
+						fs::path output_path = fs::path(context.current_output_file).replace_extension(".metadata.flex");
 
-						for (flash::MetadataAsset& asset : array)
-						{
-							std::cout << "Name: " << asset.name << ", Hash: ";
-							for (char& byte : asset.hash)
-							{
-								std::cout << std::setfill('0') << std::setw(2) << std::hex << (0xff & (unsigned int)byte);
-							}
+						sc::OutputFileStream file(output_path);
+						file.write(metadata->data(), metadata->length());
 
-							std::cout << std::endl;
-						}
+						std::cout << "Metadata file saved to: " << output_path.make_preferred() << std::endl;
+						delete metadata;
 					}
 				}
 				else
@@ -48,7 +49,7 @@ namespace sc
 				}
 			}
 
-			virtual void compress(sc::Stream& input, sc::Stream& output, Method method)
+			virtual void compress(OperationContext& context, sc::Stream& input, sc::Stream& output, Method method)
 			{
 				flash::Signature signature;
 
@@ -67,11 +68,17 @@ namespace sc
 					throw sc::Exception("Unsupported compression method!");
 				}
 
-				sc::compression::flash::Compressor::Context context;
-				context.signature = signature;
+				sc::compression::flash::Compressor::Context compress_context;
+				compress_context.signature = signature;
+
+				if (metadata_paths.size() > context.current_index)
+				{
+					fs::path metadata_path = metadata_paths[context.current_index];
+					compress_context.metadata = sc::CreateRef<sc::InputFileStream>(metadata_path);
+				}
 
 				sc::compression::flash::Compressor compressor;
-				compressor.compress(input, output, context);
+				compressor.compress(input, output, compress_context);
 			}
 		};
 	}

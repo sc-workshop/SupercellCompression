@@ -115,9 +115,11 @@ void supercell_compression_cli(sc::ArgumentParser& parser)
 	auto processor = InterfaceFactrory(method, container);
 	processor->parse(parser);
 
-	for (std::string& path_string : input_paths)
+	OperationContext context;
+	for (size_t i = 0; input_paths.size() > i; i++)
 	{
-		fs::path input_path = path_string;
+		fs::path input_path = input_paths[i];
+
 		if (fs::is_directory(input_path))
 		{
 			continue;
@@ -137,14 +139,18 @@ void supercell_compression_cli(sc::ArgumentParser& parser)
 			sc::InputFileStream input_file(input_path);
 			sc::OutputFileStream output_file(output_path);
 
+			context.current_file = input_path;
+			context.current_output_file = output_path;
+			context.current_index = i;
+
 			switch (mode)
 			{
 			case Mode::Decompress:
-				processor->decompress(input_file, output_file);
+				processor->decompress(context, input_file, output_file);
 				std::cout << input_path.make_preferred() << " decompressed to " << output_path.make_preferred() << std::endl;
 				break;
 			case Mode::Compress:
-				processor->compress(input_file, output_file, method);
+				processor->compress(context, input_file, output_file, method);
 				std::cout << input_path.make_preferred() << " compressed to " << output_path.make_preferred() << std::endl;
 				break;
 			default:
@@ -156,6 +162,10 @@ void supercell_compression_cli(sc::ArgumentParser& parser)
 			std::cout << "Failed: " << input_path.make_preferred() << std::endl;
 			std::cout << "Reason: " << exception.what() << std::endl;
 		}
+	}
+
+	for (std::string& path_string : input_paths)
+	{
 	}
 }
 

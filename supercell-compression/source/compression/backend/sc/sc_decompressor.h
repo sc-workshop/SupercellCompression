@@ -1,10 +1,8 @@
 #pragma once
 
-#include "metadata.h"
-
-#include <optional>
 #include <core/io/stream.h>
 #include <core/preprocessor/api.h>
+#include <core/io/memory_stream.h>
 
 namespace sc
 {
@@ -14,7 +12,7 @@ namespace sc
 		{
 			struct SUPERCELL_API Decompressor
 			{
-				static void decompress(Stream& input, Stream& output, std::optional<MetadataAssetArray> metadata = std::nullopt);
+				static void decompress(Stream& input, Stream& output, sc::MemoryStream** metadata = nullptr);
 			};
 		}
 	}

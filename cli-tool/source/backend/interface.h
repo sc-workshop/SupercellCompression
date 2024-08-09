@@ -11,8 +11,8 @@ namespace sc
 		{
 		public:
 			virtual void parse(sc::ArgumentParser& parser) = 0;
-			virtual void decompress(sc::Stream& input, sc::Stream& output) = 0;
-			virtual void compress(sc::Stream& input, sc::Stream& output, Method method) = 0;
+			virtual void decompress(OperationContext& context, sc::Stream& input, sc::Stream& output) = 0;
+			virtual void compress(OperationContext& context, sc::Stream& input, sc::Stream& output, Method method) = 0;
 		};
 	}
 }

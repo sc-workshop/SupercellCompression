@@ -29,3 +29,13 @@ namespace
 		ZSTD,
 	};
 }
+
+namespace
+{
+	struct OperationContext
+	{
+		int current_index = -1;
+		fs::path current_file;
+		fs::path current_output_file;
+	};
+}

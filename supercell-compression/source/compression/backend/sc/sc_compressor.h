@@ -3,6 +3,7 @@
 #include "signature.h"
 
 #include <thread>
+#include <core/memory/ref.h>
 #include <core/io/stream.h>
 #include <core/preprocessor/api.h>
 
@@ -18,8 +19,7 @@ namespace sc
 				{
 					Signature signature = Signature::Zstandard;
 
-					bool write_assets = false;
-					// TODO(pavidloq): metadata generation
+					Ref<Stream> metadata = nullptr;
 
 					uint32_t threads_count = std::thread::hardware_concurrency() <= 0 ? 1 : std::thread::hardware_concurrency();
 				};
