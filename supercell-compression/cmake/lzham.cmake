@@ -13,7 +13,10 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/richgel999/lzham_codec.git
     GIT_TAG d379b1f9121e2197881c61cfc4713c78848bdfe7
 )
-FetchContent_MakeAvailable(lzham_codec)
+# Just download repo. No need to call CMakeLists inside it.
+if(NOT lzham_codec_POPULATED)
+    FetchContent_Populate(lzham_codec)
+endif()
 
 # lzham sources
 set(LZHAM_DEC_SOURCE_DIR ${lzham_codec_SOURCE_DIR}/lzhamdecomp)
