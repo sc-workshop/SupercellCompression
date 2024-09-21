@@ -24,15 +24,15 @@ endif()
 # add *.h and *.cpp files
 target_sources(${TARGET} PRIVATE ${HEADERS} ${SOURCES})
 
-if(NOT SC_COMPRESSION_IN_SOURCE_BUILD)
-    source_group(TREE ${CMAKE_SOURCE_DIR}/supercell-compression/source/ FILES ${HEADERS} ${SOURCES})
-endif()
-
 # include directories
 target_include_directories(${TARGET} PUBLIC source)
 
 # link supercell::core library
 target_link_libraries(${TARGET} PUBLIC supercell::core)
+
+set_target_properties(${TARGET} PROPERTIES
+    FOLDER SupercellSDK/core
+)
 
 # setup project
 sc_project_setup(${TARGET})

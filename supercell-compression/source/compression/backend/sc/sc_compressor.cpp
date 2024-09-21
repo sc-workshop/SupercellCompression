@@ -109,7 +109,7 @@ namespace sc
 					size_t metadata_length = context.metadata->length();
 					output.write(flash::SC_START, 5);
 					output.write(context.metadata->data(), metadata_length);
-					output.write_unsigned_int(metadata_length, Endian::Big);
+					output.write_unsigned_int(static_cast<uint32_t>(metadata_length), Endian::Big);
 				}
 			}
 		}

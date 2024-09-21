@@ -9,6 +9,10 @@ set(CLI_TARGET supercell-compression-cli)
 
 add_executable(${CLI_TARGET} ${HEADERS} ${SOURCES})
 
+set_target_properties(${CLI_TARGET} PROPERTIES
+    FOLDER SupercellSDK/tools
+)
+
 target_include_directories(${CLI_TARGET} PUBLIC source)
 
 target_link_libraries(${CLI_TARGET} PRIVATE supercell::compression)
