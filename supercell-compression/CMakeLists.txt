@@ -5,7 +5,7 @@ file(GLOB_RECURSE HEADERS source/*.h)
 file(GLOB_RECURSE SOURCES source/*.cpp)
 
 # choosing build type
-if(SC_COMPRESSION_BUILD_SHARED)
+if(SC_BUILD_SHARED)
     # shared library
     set(TARGET supercell-compression-shared)
 
