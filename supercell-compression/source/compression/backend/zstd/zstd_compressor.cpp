@@ -5,6 +5,8 @@
 #include <core/exception/exception.h>
 #include <core/memory/memory.h>
 
+using namespace wk;
+
 namespace sc
 {
 	ZstdCompressor::ZstdCompressor(Props& props) : Input_Buffer_Size(ZSTD_CStreamInSize()), Output_Buffer_Size(ZSTD_CStreamOutSize())

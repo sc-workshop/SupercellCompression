@@ -2,6 +2,8 @@
 
 #include <astcenc.h>
 
+using namespace wk;
+
 namespace sc
 {
 	namespace astc

@@ -9,7 +9,7 @@
 
 namespace sc
 {
-	class SUPERCELL_API LzhamCompressor : public CompressorInterface
+	class WORKSHOP_API LzhamCompressor : public CompressorInterface
 	{
 	public:
 		struct Props
@@ -41,13 +41,13 @@ namespace sc
 		};
 
 	public:
-		static void write(Stream& input, Stream& output, Props& props);
+		static void write(wk::Stream& input, wk::Stream& output, Props& props);
 
 	public:
 		LzhamCompressor(Props& props);
 		virtual ~LzhamCompressor();
 
-		void compress(Stream& input, Stream& output) override;
+		void compress(wk::Stream& input, wk::Stream& output) override;
 
 	private:
 		lzham_compress_state_ptr m_state;

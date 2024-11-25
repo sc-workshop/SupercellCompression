@@ -9,7 +9,7 @@
 
 namespace sc
 {
-	class SUPERCELL_API ASTCDecompressor : public ImageDecompressorInterface
+	class WORKSHOP_API ASTCDecompressor : public ImageDecompressorInterface
 	{
 	public:
 		struct Props
@@ -23,13 +23,13 @@ namespace sc
 		};
 
 	public:
-		static void read_astc_header(Stream& input, std::uint16_t& width, std::uint16_t& height, std::uint8_t& blocks_x, std::uint8_t& blocks_y);
+		static void read_astc_header(wk::Stream& input, std::uint16_t& width, std::uint16_t& height, std::uint8_t& blocks_x, std::uint8_t& blocks_y);
 
 	public:
 		ASTCDecompressor(Props& props);
 		virtual ~ASTCDecompressor();
 
-		void decompress(std::uint16_t width, std::uint16_t height, Image::BasePixelType pixel_type, Stream& input, Stream& output) override;
+		void decompress(std::uint16_t width, std::uint16_t height, wk::Image::BasePixelType pixel_type, wk::Stream& input, wk::Stream& output) override;
 
 	private:
 		astcenc_context* m_context = nullptr;

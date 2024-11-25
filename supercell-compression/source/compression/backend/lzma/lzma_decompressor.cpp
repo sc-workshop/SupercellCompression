@@ -5,6 +5,8 @@
 #include <Alloc.h>
 #include <LzmaDec.h>
 
+using namespace wk;
+
 namespace sc
 {
 	struct LzmaDecompressContext : public CLzmaDec {};

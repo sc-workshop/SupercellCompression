@@ -34,6 +34,6 @@ namespace sc
 			Exhausitive = 100
 		};
 
-		astcenc_swizzle get_swizzle(Image::BasePixelType type);
+		astcenc_swizzle get_swizzle(wk::Image::BasePixelType type);
 	}
 }

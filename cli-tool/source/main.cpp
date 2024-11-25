@@ -6,6 +6,7 @@
 #include <core/memory/ref.h>
 
 using namespace sc::compression;
+using namespace wk;
 
 namespace
 {
@@ -20,7 +21,7 @@ namespace
 			return Mode::Decompress;
 		}
 
-		throw sc::Exception("Wrong mode!");
+		throw Exception("Wrong mode!");
 	}
 
 	Container string_to_container(std::string container)
@@ -34,7 +35,7 @@ namespace
 			return Container::SC;
 		}
 
-		throw sc::Exception("Wrong container!");
+		throw Exception("Wrong container!");
 	}
 
 	Method string_to_method(std::string method)
@@ -52,7 +53,7 @@ namespace
 			return Method::ZSTD;
 		}
 
-		throw sc::Exception("Wrong method!");
+		throw Exception("Wrong method!");
 	}
 }
 
@@ -81,18 +82,18 @@ namespace
 		//}
 	}
 
-	sc::Ref<CommandLineInterface> InterfaceFactrory(Method method, Container container)
+	Ref<CommandLineInterface> InterfaceFactrory(Method method, Container container)
 	{
 		if (container == Container::SC)
 		{
-			return sc::CreateRef<ScCommandLineInterface>();
+			return CreateRef<ScCommandLineInterface>();
 		}
 
-		throw sc::Exception("Failed to create interface!");
+		throw Exception("Failed to create interface!");
 	}
 }
 
-void supercell_compression_cli(sc::ArgumentParser& parser)
+void supercell_compression_cli(ArgumentParser& parser)
 {
 	Mode mode = string_to_mode(parser.get<std::string>("mode"));
 	Method method = string_to_method(parser.get<std::string>("--method"));
@@ -139,8 +140,8 @@ void supercell_compression_cli(sc::ArgumentParser& parser)
 
 		try
 		{
-			sc::InputFileStream input_file(input_path);
-			sc::OutputFileStream output_file(output_path);
+			InputFileStream input_file(input_path);
+			OutputFileStream output_file(output_path);
 
 			context.current_file = input_path;
 			context.current_output_file = output_path;
@@ -160,7 +161,7 @@ void supercell_compression_cli(sc::ArgumentParser& parser)
 				break;
 			}
 		}
-		catch (sc::Exception& exception)
+		catch (Exception& exception)
 		{
 			std::cout << "Failed: " << input_path.make_preferred() << std::endl;
 			std::cout << "Reason: " << exception.what() << std::endl;
@@ -178,7 +179,7 @@ int main(int argc, const char** argv)
 	fs::path executable_name = executable.stem();
 
 	// Arguments
-	sc::ArgumentParser parser(executable_name.string(), "Tool for compress and decompress files using Supercell compression methods");
+	ArgumentParser parser(executable_name.string(), "Tool for compress and decompress files using Supercell compression methods");
 
 	parser.add_argument("mode")
 		.help("Possible values: compress, decompress")
@@ -224,7 +225,7 @@ int main(int argc, const char** argv)
 	{
 		supercell_compression_cli(parser);
 	}
-	catch (sc::Exception& exception)
+	catch (const Exception& exception)
 	{
 		std::cout << "Unknown unexpected exception: " << exception.what() << std::endl;
 	}

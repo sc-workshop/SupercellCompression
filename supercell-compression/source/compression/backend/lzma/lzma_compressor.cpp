@@ -7,16 +7,18 @@
 
 const std::size_t stream_size = (4 * 1024 * 1024); // 4MB
 
+using namespace wk;
+
 struct CSeqInStreamWrap
 {
 	ISeqInStream vt;
-	sc::Stream* input;
+	wk::Stream* input;
 };
 
 struct CSeqOutStreamWrap
 {
 	ISeqOutStream vt;
-	sc::Stream* output;
+	wk::Stream* output;
 };
 
 static SRes LzmaStreamRead(const ISeqInStream* p, void* data, std::size_t* size)

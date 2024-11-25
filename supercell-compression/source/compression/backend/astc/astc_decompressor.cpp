@@ -5,6 +5,8 @@
 
 #include <astcenc.h>
 
+using namespace wk;
+
 namespace sc
 {
 	void ASTCDecompressor::read_astc_header(Stream& input, std::uint16_t& width, std::uint16_t& height, std::uint8_t& blocks_x, std::uint8_t& blocks_y)

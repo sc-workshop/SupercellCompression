@@ -7,7 +7,7 @@
 
 namespace sc
 {
-	class SUPERCELL_API LzhamDecompressor : public DecompressorInterface
+	class WORKSHOP_API LzhamDecompressor : public DecompressorInterface
 	{
 	public:
 		struct Props
@@ -38,7 +38,7 @@ namespace sc
 		LzhamDecompressor(Props& props);
 		virtual ~LzhamDecompressor();
 
-		void decompress(Stream& input, Stream& output) override;
+		void decompress(wk::Stream& input, wk::Stream& output) override;
 
 	private:
 		lzham_decompress_state_ptr m_state = nullptr;

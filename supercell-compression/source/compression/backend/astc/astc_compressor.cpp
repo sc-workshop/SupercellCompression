@@ -5,6 +5,8 @@
 
 #include <astcenc.h>
 
+using namespace wk;
+
 namespace sc
 {
 	void ASTCCompressor::write_astc_header(Stream& output, std::uint16_t width, std::uint16_t height, const Props& props)

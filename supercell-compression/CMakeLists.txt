@@ -27,15 +27,18 @@ target_sources(${TARGET} PRIVATE ${HEADERS} ${SOURCES})
 # include directories
 target_include_directories(${TARGET} PUBLIC source)
 
-# link supercell::core library
-target_link_libraries(${TARGET} PUBLIC supercell::core)
+# link wk::core library
+target_link_libraries(
+    ${TARGET} PUBLIC 
+    wk::core flatbuffers
+)
 
 set_target_properties(${TARGET} PROPERTIES
     FOLDER SupercellSDK/core
 )
 
 # setup project
-sc_project_setup(${TARGET})
+wk_project_setup(${TARGET})
 
 # add compression dependencies
 include(cmake/lzma.cmake)

@@ -9,7 +9,7 @@
 
 namespace sc
 {
-	class SUPERCELL_API ZstdCompressor : CompressorInterface
+	class WORKSHOP_API ZstdCompressor : CompressorInterface
 	{
 	public:
 		struct Props
@@ -173,7 +173,7 @@ namespace sc
 		ZstdCompressor(Props& props);
 		~ZstdCompressor();
 
-		void compress(Stream& input, Stream& output) override;
+		void compress(wk::Stream& input, wk::Stream& output) override;
 
 	private:
 		ZSTD_CCtx* m_context = nullptr;

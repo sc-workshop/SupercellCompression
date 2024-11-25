@@ -13,7 +13,7 @@ namespace sc
 		ZstdDecompressor();
 		~ZstdDecompressor();
 
-		void decompress(Stream& input, Stream& output) override;
+		void decompress(wk::Stream& input, wk::Stream& output) override;
 
 	private:
 		ZSTD_DStream* m_context;

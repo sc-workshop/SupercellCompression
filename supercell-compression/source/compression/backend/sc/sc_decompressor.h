@@ -1,9 +1,12 @@
 #pragma once
 
-#include <core/preprocessor/api.h>
-#include <core/io/memory_stream.h>
-#include <core/io/stream.h>
-#include <core/preprocessor/api.h>
+#include <optional>
+
+#include "core/preprocessor/api.h"
+#include "core/io/memory_stream.h"
+#include "core/io/stream.h"
+
+#include "flatbuffers/flexbuffers.h"
 
 namespace sc
 {
@@ -11,9 +14,9 @@ namespace sc
 	{
 		namespace flash
 		{
-			struct SUPERCELL_API Decompressor
+			struct WORKSHOP_API Decompressor
 			{
-				static void decompress(Stream& input, Stream& output, sc::MemoryStream** metadata = nullptr);
+				static std::optional<flexbuffers::Reference> decompress(wk::Stream& input, wk::Stream& output);
 			};
 		}
 	}

@@ -11,13 +11,15 @@
 
 #include <vector>
 
+using namespace wk;
+
 namespace sc
 {
 	namespace compression
 	{
 		namespace flash
 		{
-			void Decompressor::decompress(Stream& input, Stream& output, sc::MemoryStream** metadata)
+			std::optional<flexbuffers::Reference> Decompressor::decompress(Stream& input, Stream& output)
 			{
 				// Reading file magic
 				std::uint16_t magic = input.read_unsigned_short(Endian::Big);
@@ -26,7 +28,7 @@ namespace sc
 					throw Exception("Bad compressed file magic!");
 				}
 
-				std::size_t compressed_data_length = input.length();
+				std::optional<flexbuffers::Reference> result = std::nullopt;
 
 				// Checking compression version
 				std::uint32_t version = input.read_unsigned_int(Endian::Big);
@@ -34,29 +36,22 @@ namespace sc
 				{
 					version = input.read_unsigned_int(Endian::Big);
 
-					size_t offset = input.position();
+					uint32_t* data_end = (uint32_t*)((uint8_t*)input.data() + input.length());
+					uint32_t length = swap_endian(*--data_end);
+					const uint8_t* data = (uint8_t*)data_end - length;
 
-					input.seek(input.length() - 4);
-					uint32_t metadata_size = input.read_unsigned_int(Endian::Big);
-
-					if (metadata != nullptr)
+					bool valid = flexbuffers::VerifyBuffer(data, length);
+					if (valid)
 					{
-						input.seek(input.position() - metadata_size - 4);
-						*metadata = new sc::MemoryStream(metadata_size);
-						input.read((*metadata)->data(), metadata_size);
+						result = flexbuffers::GetRoot(data, length);
 					}
-
-					input.seek(offset);
-
-					compressed_data_length -= metadata_size; // Metadata
-					compressed_data_length -= 4; // Metadata Length
-					compressed_data_length -= 5; // START
+					
 				}
 
 				// Read hash
 				std::uint32_t hash_length = input.read_unsigned_int(Endian::Big);
 
-				sc::MemoryStream hash(hash_length);
+				MemoryStream hash(hash_length);
 				input.read(hash.data(), hash_length);
 
 				// Version 3 is zstandard
@@ -89,8 +84,10 @@ namespace sc
 				}
 				else if (version == 2) // Version 2 is uncompressed data // DaniilSV: are you sure?
 				{
-					output.write(input.data(), compressed_data_length);
+					output.write(input.data(), input.length() - input.position());
 				}
+
+				return result;
 			}
 		}
 	}

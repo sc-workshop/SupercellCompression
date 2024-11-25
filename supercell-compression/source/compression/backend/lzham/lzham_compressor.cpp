@@ -7,6 +7,8 @@
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 
+using namespace wk;
+
 namespace sc
 {
 	void LzhamCompressor::write(Stream& input, Stream& output, Props& props)

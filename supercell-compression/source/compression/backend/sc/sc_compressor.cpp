@@ -7,6 +7,8 @@
 #include <core/io/buffer_stream.h>
 #include <core/crypto/md5.h>
 
+using namespace wk;
+
 namespace sc
 {
 	namespace compression
@@ -17,7 +19,7 @@ namespace sc
 			{
 				output.write_unsigned_short(SC_MAGIC);
 
-				bool write_metadata = context.metadata != nullptr;
+				bool write_metadata = context.metadata.has_value();
 				if (write_metadata)
 				{
 					output.write_int(4, Endian::Big);
@@ -106,9 +108,11 @@ namespace sc
 
 				if (write_metadata)
 				{
-					size_t metadata_length = context.metadata->length();
+					context.metadata->Finish();
+					size_t metadata_length = context.metadata->GetSize();
+
 					output.write(flash::SC_START, 5);
-					output.write(context.metadata->data(), metadata_length);
+					output.write(context.metadata->GetBuffer().data(), metadata_length);
 					output.write_unsigned_int(static_cast<uint32_t>(metadata_length), Endian::Big);
 				}
 			}

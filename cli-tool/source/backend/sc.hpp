@@ -1,3 +1,7 @@
+#include "core/io/stream.h"
+
+using namespace wk;
+
 namespace sc
 {
 	namespace compression
@@ -8,7 +12,7 @@ namespace sc
 			bool save_metadata = false;
 			std::vector<std::string> metadata_paths;
 
-			static void initialize(sc::ArgumentParser& parser)
+			static void initialize(wk::ArgumentParser& parser)
 			{
 				parser.add_argument("-scsm", "--sc-save-metadata")
 					.flag()
@@ -19,37 +23,28 @@ namespace sc
 					.help("Path to .metadata.flex to write while compressing");
 			}
 
-			virtual void parse(sc::ArgumentParser& parser)
+			virtual void parse(wk::ArgumentParser& parser)
 			{
 				save_metadata = parser.get<bool>("--sc-save-metadata");
 				metadata_paths = parser.get<std::vector<std::string>>("--sc-meta");
 			}
 
-			virtual void decompress(OperationContext& context, sc::Stream& input, sc::Stream& output)
+			virtual void decompress(OperationContext& context, Stream& input, Stream& output)
 			{
-				if (save_metadata)
-				{
-					sc::MemoryStream* metadata = nullptr;
-					flash::Decompressor::decompress(input, output, &metadata);
+				auto metadata = flash::Decompressor::decompress(input, output);
+				if (!metadata.has_value() || !save_metadata) return;
 
-					if (metadata != nullptr)
-					{
-						fs::path output_path = fs::path(context.current_output_file).replace_extension(".metadata.flex");
+				fs::path output_path = fs::path(context.current_output_file).replace_extension(".metadata.flex");
 
-						sc::OutputFileStream file(output_path);
-						file.write(metadata->data(), metadata->length());
+				OutputFileStream file(output_path);
+				std::string data;
+				metadata->ToString(true, true, data);
+				file.write_string(data);
 
-						std::cout << "Metadata file saved to: " << output_path.make_preferred() << std::endl;
-						delete metadata;
-					}
-				}
-				else
-				{
-					flash::Decompressor::decompress(input, output);
-				}
+				std::cout << "Metadata file saved to: " << output_path.make_preferred() << std::endl;
 			}
 
-			virtual void compress(OperationContext& context, sc::Stream& input, sc::Stream& output, Method method)
+			virtual void compress(OperationContext& context, Stream& input, Stream& output, Method method)
 			{
 				flash::Signature signature;
 
@@ -65,17 +60,17 @@ namespace sc
 					signature = flash::Signature::Zstandard;
 					break;
 				default:
-					throw sc::Exception("Unsupported compression method!");
+					throw Exception("Unsupported compression method!");
 				}
 
 				sc::compression::flash::Compressor::Context compress_context;
 				compress_context.signature = signature;
 
-				if (metadata_paths.size() > context.current_index)
-				{
-					fs::path metadata_path = metadata_paths[context.current_index];
-					compress_context.metadata = sc::CreateRef<sc::InputFileStream>(metadata_path);
-				}
+				// if (metadata_paths.size() > context.current_index)
+				// {
+				// 	fs::path metadata_path = metadata_paths[context.current_index];
+				// 	compress_context.metadata = flexbuffers::Builder();
+				// }
 
 				sc::compression::flash::Compressor compressor;
 				compressor.compress(input, output, compress_context);

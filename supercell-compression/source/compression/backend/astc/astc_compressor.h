@@ -9,7 +9,7 @@
 
 namespace sc
 {
-	class SUPERCELL_API ASTCCompressor : public ImageCompressorInterface
+	class WORKSHOP_API ASTCCompressor : public ImageCompressorInterface
 	{
 	public:
 		struct Props
@@ -24,14 +24,14 @@ namespace sc
 		};
 
 	public:
-		static void write_astc_header(Stream& output, std::uint16_t width, std::uint16_t height, const Props& props);
+		static void write_astc_header(wk::Stream& output, std::uint16_t width, std::uint16_t height, const Props& props);
 
 	public:
 		ASTCCompressor(Props& props);
 		virtual ~ASTCCompressor();
 
 	public:
-		void compress(std::uint16_t width, std::uint16_t height, Image::BasePixelType pixel_type, Stream& input, Stream& output) override;
+		void compress(std::uint16_t width, std::uint16_t height, wk::Image::BasePixelType pixel_type, wk::Stream& input, wk::Stream& output) override;
 
 	private:
 		astcenc_context* m_context = nullptr;

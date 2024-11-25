@@ -9,7 +9,7 @@
 
 namespace sc
 {
-	class SUPERCELL_API LzmaCompressor : CompressorInterface
+	class WORKSHOP_API LzmaCompressor : CompressorInterface
 	{
 	public:
 		struct Props
@@ -88,7 +88,7 @@ namespace sc
 		LzmaCompressor(Props& props);
 		~LzmaCompressor();
 
-		void compress(Stream& input, Stream& output) override;
+		void compress(wk::Stream& input, wk::Stream& output) override;
 
 	private:
 		CLzmaEncHandle m_context;

@@ -4,6 +4,8 @@
 
 #include <core/memory/memory.h>
 
+using namespace wk;
+
 namespace sc
 {
 	LzhamDecompressor::Props::Props()
@@ -16,7 +18,7 @@ namespace sc
 		m_state = lzham_decompress_init((lzham_decompress_params*)&props);
 		if (!m_state)
 		{
-			throw Exception("Failed to initalize LZHAM decompression!");
+			throw Exception("Failed to initialize LZHAM decompression!");
 		}
 
 		m_unpacked_length = props.unpacked_length;

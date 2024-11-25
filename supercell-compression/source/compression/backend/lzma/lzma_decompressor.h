@@ -8,7 +8,7 @@
 namespace sc
 {
 	// forward declare
-	struct SUPERCELL_API LzmaDecompressContext;
+	struct WORKSHOP_API LzmaDecompressContext;
 
 	class LzmaDecompressor : DecompressorInterface
 	{
@@ -16,7 +16,7 @@ namespace sc
 		LzmaDecompressor(std::uint8_t header[lzma::PROPS_SIZE], const uint64_t unpacked_size);
 		~LzmaDecompressor();
 
-		void decompress(Stream& input, Stream& output) override;
+		void decompress(wk::Stream& input, wk::Stream& output) override;
 
 	private:
 		LzmaDecompressContext* m_context;

@@ -1,6 +1,5 @@
 # lzma
 
-
 # custom CMake module for LZMA
 cmake_minimum_required(VERSION 3.22)
 
@@ -38,6 +37,6 @@ target_compile_definitions(${LZMA_TARGET} PRIVATE
 )
 
 target_compile_options(${LZMA_TARGET} PRIVATE
-    $<$<AND:${SC_MSVC},${SC_RELEASE}>: /Ox /GF /Gy /GS- /Ob2 /Oi /Ot>
-    $<$<AND:${SC_GNU},${SC_RELEASE}>: -c -O2 -Wall>
+    $<$<AND:${WK_MSVC},${WK_RELEASE}>: /Ox /GF /Gy /GS- /Ob2 /Oi /Ot>
+    $<$<AND:${WK_GNU},${WK_RELEASE}>: -c -O2 -Wall>
 )

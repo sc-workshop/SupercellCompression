@@ -10,6 +10,6 @@ namespace sc
 		virtual ~CompressorInterface() = default;
 
 	public:
-		virtual void compress(Stream & input, Stream & output) = 0;
+		virtual void compress(wk::Stream & input, wk::Stream & output) = 0;
 	};
 }

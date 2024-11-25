@@ -1,6 +1,5 @@
 # lzham
 
-
 # custom CMake module for LZHAM
 cmake_minimum_required(VERSION 3.22)
 
@@ -8,14 +7,28 @@ cmake_minimum_required(VERSION 3.22)
 include(FetchContent)
 
 # install lzham
-FetchContent_Declare(
-    lzham_codec
-    GIT_REPOSITORY https://github.com/richgel999/lzham_codec.git
-    GIT_TAG d379b1f9121e2197881c61cfc4713c78848bdfe7
-)
-# Just download repo. No need to call CMakeLists inside it.
-if(NOT lzham_codec_POPULATED)
-    FetchContent_Populate(lzham_codec)
+
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.28.0") 
+    FetchContent_Declare(
+        lzham_codec
+        GIT_REPOSITORY https://github.com/richgel999/lzham_codec.git
+        GIT_TAG d379b1f9121e2197881c61cfc4713c78848bdfe7
+        EXCLUDE_FROM_ALL
+    )
+    FetchContent_MakeAvailable(lzham_codec)
+
+else()
+    FetchContent_Declare(
+        lzham_codec
+        GIT_REPOSITORY https://github.com/richgel999/lzham_codec.git
+        GIT_TAG d379b1f9121e2197881c61cfc4713c78848bdfe7
+    )
+
+    # Just download repo. No need to call CMakeLists inside it.
+    if(NOT lzham_codec_POPULATED)
+        FetchContent_Populate(lzham_codec)
+    endif()
 endif()
 
 # lzham sources
@@ -35,7 +48,7 @@ set(LZHAM_Compressor_Sources
     ${LZHAM_CMP_SOURCE_DIR}/lzham_pthreads_threading.cpp
     ${LZHAM_CMP_SOURCE_DIR}/lzham_threading.h
 
-    $<${SC_MSVC}: ${LZHAM_CMP_SOURCE_DIR}/lzham_win32_threading.cpp>
+    $<${WK_MSVC}: ${LZHAM_CMP_SOURCE_DIR}/lzham_win32_threading.cpp>
 )
 
 set(LZHAM_Decompressor_Sources
@@ -87,25 +100,25 @@ target_include_directories(${LZHAM_TARGET} PRIVATE
 
 # preprocessor definitions
 target_compile_definitions(${LZHAM_TARGET} PRIVATE
-    $<${SC_RELEASE}:NDEBUG>
-    $<${SC_DEBUG}:_DEBUG>
+    $<${WK_RELEASE}:NDEBUG>
+    $<${WK_DEBUG}:_DEBUG>
 )
 
 # flags for non-x64 systems
-if($<NOT:${SC_X64}>)
+if($<NOT:${WK_X64}>)
     target_compile_options(${LZHAM_TARGET} PRIVATE
-        $<${SC_GNU}: -m32>
+        $<${WK_GNU}: -m32>
     )
 endif()
 
 # compile options
 target_compile_options(${LZHAM_TARGET} PRIVATE
-    $<${SC_GNU}: -Wall -Wextra -fno-strict-aliasing -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64>
-    $<$<AND:${SC_GNU},${SC_DEBUG}>: -g>
-    $<$<AND:${SC_GNU},${SC_RELEASE}>: -O3 -fomit-frame-pointer -fexpensive-optimizations>
+    $<${WK_GNU}: -Wall -Wextra -fno-strict-aliasing -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64>
+    $<$<AND:${WK_GNU},${WK_DEBUG}>: -g>
+    $<$<AND:${WK_GNU},${WK_RELEASE}>: -O3 -fomit-frame-pointer -fexpensive-optimizations>
 
-    $<$<AND:${SC_MSVC},${SC_DEBUG}>: /RTC1>
-    $<$<AND:${SC_MSVC},${SC_RELEASE}>: /GS- /Gy /fp:fast /W4 /Ox /Ob2 /Oi /Ot /Oy>
+    $<$<AND:${WK_MSVC},${WK_DEBUG}>: /RTC1>
+    $<$<AND:${WK_MSVC},${WK_RELEASE}>: /GS- /Gy /fp:fast /W4 /Ox /Ob2 /Oi /Ot /Oy>
 )
 
 # TODO(Daniil-SV): Make .patch for LZHAM to make it work on MacOS

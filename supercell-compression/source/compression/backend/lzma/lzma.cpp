@@ -5,6 +5,8 @@
 #include <Alloc.h>
 #include <LzmaEnc.h>
 
+using namespace wk;
+
 namespace sc
 {
 	namespace lzma
