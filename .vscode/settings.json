@@ -1,6 +1,0 @@
-{
-    "cmake.configureSettings": {
-        "SC_CORE_TEST": "ON",
-        "SC_COMPRESSION_CLI": "ON"
-    },
-}
