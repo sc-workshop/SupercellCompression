@@ -1,5 +1,6 @@
 #include "compression/backend/zstd/zstd_decompressor.h"
 
+#define ZSTD_STATIC_LINKING_ONLY
 #include <zstd.h>
 
 #include <core/exception/exception.h>
@@ -110,7 +111,7 @@ namespace sc
 		size_t ret_position = input.position();
 
 		uint32_t magic = input.read_unsigned_int();
-		bool valid = ZSTD_isFrame((const void*)&magic, sizeof(uint32_t)) > 0;
+		bool valid = ZSTD_isFrame(&magic, sizeof(uint32_t)) > 0;
 		input.seek(ret_position);
 		return valid;
 	}
