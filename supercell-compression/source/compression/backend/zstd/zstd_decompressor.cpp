@@ -104,4 +104,14 @@ namespace sc
 			Memory::free(m_output_buffer);
 		}
 	}
+
+	bool ZstdDecompressor::validate(wk::Stream& input)
+	{
+		size_t ret_position = input.position();
+
+		uint32_t magic = input.read_unsigned_int();
+		bool valid = ZSTD_isFrame((const void*)&magic, sizeof(uint32_t)) > 0;
+		input.seek(ret_position);
+		return valid;
+	}
 }

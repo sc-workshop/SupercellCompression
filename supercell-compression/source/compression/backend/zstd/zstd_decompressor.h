@@ -15,6 +15,9 @@ namespace sc
 
 		void decompress(wk::Stream& input, wk::Stream& output) override;
 
+	public:
+		static bool validate(wk::Stream& input);
+
 	private:
 		ZSTD_DStream* m_context;
 
