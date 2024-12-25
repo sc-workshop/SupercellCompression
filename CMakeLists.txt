@@ -9,18 +9,18 @@ option(SC_COMPRESSION_BUILD_CLI "Build CLI version of supercell::compression lib
 # includes
 include(FetchContent)
 
-if(SC_COMPRESSION_BUILD_CLI)
-    set(WK_CLI_DEPENDENCIES ON)
-endif()
-
 # SC metadata
 set(WK_SERIALIZATION_FLATBUFFER ON)
 
 include(cmake/dependencies.cmake)
+include(WkFlatbuffers)
+include(WkArgsparse)
 
 # projects
 add_subdirectory(supercell-compression)
 
 if(SC_COMPRESSION_BUILD_CLI)
+    include(WkJson)
     add_subdirectory(cli-tool)
 endif()
+ 

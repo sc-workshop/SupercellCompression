@@ -49,3 +49,5 @@ include(cmake/astc.cmake)
 target_include_directories(${TARGET} PRIVATE ${lzma-sdk_SOURCE_DIR}/C ${lzham_codec_SOURCE_DIR}/include ${zstd_SOURCE_DIR}/lib ${astcenc_SOURCE_DIR}/Source)
 
 target_link_libraries(${TARGET} PRIVATE lzma-lib lzham-lib libzstd_static astcenc-${ASTC_PREFIX}-static)
+
+wk_include_flatbuffers()
