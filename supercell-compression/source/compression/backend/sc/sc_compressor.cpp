@@ -51,7 +51,23 @@ namespace sc
 					output.write(&hash, MD5::HASH_LENGTH);
 				}
 
-				switch (context.signature)
+				// Compressing file content
+				compress(input, output, context.signature);
+
+				if (write_metadata)
+				{
+					context.metadata->Finish();
+					size_t metadata_length = context.metadata->GetSize();
+
+					output.write(flash::SC_START, 5);
+					output.write(context.metadata->GetBuffer().data(), metadata_length);
+					output.write_unsigned_int(static_cast<uint32_t>(metadata_length), Endian::Big);
+				}
+			}
+
+			void Compressor::compress(wk::Stream& input, wk::Stream& output, Signature signature)
+			{
+				switch (signature)
 				{
 				case Signature::Lzma:
 				{
@@ -61,7 +77,7 @@ namespace sc
 					props.pb = 2;
 					props.lc = 3;
 					props.lp = 0;
-					props.threads = context.threads_count > 1 ? 2 : 1;
+					props.threads = 2;
 					props.dict_size = 262144;
 					props.use_long_unpacked_length = false;
 
@@ -84,7 +100,7 @@ namespace sc
 					LzhamCompressor::Props props;
 
 					props.dict_size_log2 = dictionary_size;
-					props.max_helper_threads = static_cast<std::uint16_t>(context.threads_count > 0 && context.threads_count < lzham::MAX_HELPER_THREADS ? context.threads_count : -1);
+					props.max_helper_threads = lzham::MAX_HELPER_THREADS;
 
 					LzhamCompressor compression(props);
 					compression.compress(input, output);
@@ -98,22 +114,11 @@ namespace sc
 					props.compression_level = 16;
 					props.checksum_flag = false;
 					props.content_size_flag = true;
-					props.workers_count = context.threads_count;
 
 					ZstdCompressor compression(props);
 					compression.compress(input, output);
 				}
 				break;
-				}
-
-				if (write_metadata)
-				{
-					context.metadata->Finish();
-					size_t metadata_length = context.metadata->GetSize();
-
-					output.write(flash::SC_START, 5);
-					output.write(context.metadata->GetBuffer().data(), metadata_length);
-					output.write_unsigned_int(static_cast<uint32_t>(metadata_length), Endian::Big);
 				}
 			}
 		}

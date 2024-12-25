@@ -23,10 +23,11 @@ namespace sc
 				{
 					Signature signature = Signature::Zstandard;
 					std::optional<flexbuffers::Builder> metadata;
-					uint32_t threads_count = std::thread::hardware_concurrency() <= 0 ? 1 : std::thread::hardware_concurrency();
 				};
 
 				static void compress(wk::Stream& input, wk::Stream& output, Context& context);
+
+				static void compress(wk::Stream& input, wk::Stream& output, Signature signature);
 			};
 		}
 	}
