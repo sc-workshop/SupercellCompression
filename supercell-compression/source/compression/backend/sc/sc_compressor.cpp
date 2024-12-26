@@ -5,7 +5,7 @@
 #include "compression/backend/zstd/zstd_compressor.h"
 
 #include <core/io/buffer_stream.h>
-#include <core/crypto/md5.h>
+#include <core/hashing/crypto/md5.h>
 
 using namespace wk;
 
@@ -40,15 +40,12 @@ namespace sc
 
 				// hash MD5
 				{
-					MD5::md5 md_ctx;
-					std::uint8_t hash[MD5::HASH_LENGTH];
+					hash::MD5 data_hash;
+					data_hash.update((const uint8_t*)input.data(), input.length());
+					auto digest = data_hash.digest();
 
-					md_ctx.update((std::uint8_t*)input.data(), input.length());
-
-					md_ctx.final(hash);
-
-					output.write_unsigned_int((uint32_t)MD5::HASH_LENGTH, Endian::Big);
-					output.write(&hash, MD5::HASH_LENGTH);
+					output.write_unsigned_int((uint32_t)digest.size(), Endian::Big);
+					output.write(digest.data(), digest.size());
 				}
 
 				// Compressing file content
