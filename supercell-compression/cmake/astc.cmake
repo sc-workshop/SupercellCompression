@@ -1,16 +1,23 @@
 # astc
 
-
 # astc options
 if (MSVC)
-
-set(ASTC_PREFIX "sse4.1")
-set(ASTCENC_ISA_SSE41 ON)
-
+    if ("${WK_PREFERRED_CPU_FEATURES}" STREQUAL "AVX2")
+        set(ASTC_PREFIX "avx2")
+        set(ASTCENC_ISA_AVX2 ON)
+    elseif("${WK_PREFERRED_CPU_FEATURES}" STREQUAL "SSE41")
+        set(ASTC_PREFIX "sse4.1")
+        set(ASTCENC_ISA_SSE41 ON)
+    elseif("${WK_PREFERRED_CPU_FEATURES}" STREQUAL "SSE2")
+        set(ASTC_PREFIX "sse2")
+        set(ASTCENC_ISA_SSE2 ON)
+    elseif("${WK_PREFERRED_CPU_FEATURES}" STREQUAL "Default")
+        set(ASTC_PREFIX "native")
+    endif()
 else()
 
-set(ASTC_PREFIX "native")
-set(ASTCENC_ISA_NATIVE ON)
+    set(ASTC_PREFIX "native")
+    set(ASTCENC_ISA_NATIVE ON)
 
 endif()
 

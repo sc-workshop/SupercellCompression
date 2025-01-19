@@ -36,5 +36,6 @@ namespace sc
 	private:
 		astcenc_context* m_context = nullptr;
 		astcenc_config* m_config = nullptr;
+		std::uint32_t m_threads_count = 1;
 	};
 }

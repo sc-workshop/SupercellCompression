@@ -2,8 +2,10 @@
 
 #include "core/memory/memory.h"
 #include "core/exception/exception.h"
+#include "core/parallel/enumerate.h"
 
 #include <astcenc.h>
+#include <vector>
 
 using namespace wk;
 
@@ -28,6 +30,7 @@ namespace sc
 
 	ASTCCompressor::ASTCCompressor(Props& props)
 	{
+		m_threads_count = props.threads_count;
 		m_config = new astcenc_config();
 		astcenc_error status = astcenc_config_init(
 			(astcenc_profile)props.profile,
@@ -72,15 +75,38 @@ namespace sc
 		unsigned int xblocks = (encoder_image.dim_x + blocks_x - 1) / blocks_x;
 		unsigned int yblocks = (encoder_image.dim_y + blocks_y - 1) / blocks_y;
 
-		std::size_t data_size = xblocks * yblocks * 16;
+		std::size_t data_size = (std::size_t)xblocks * yblocks * 16;
 		std::uint8_t* data = Memory::allocate(data_size);
 
-		astcenc_error status = astcenc_compress_image(m_context, &encoder_image, &swizzle, data, data_size, 0);
+		auto check_status = [&data](astcenc_error& status)
+			{
+				if (status != ASTCENC_SUCCESS)
+				{
+					Memory::free(data);
+					throw Exception("Failed to ASTC compress data with code %d", (int)status);
+				}
+			};
 
-		if (status != ASTCENC_SUCCESS)
+		std::vector<astcenc_error> status(m_threads_count, ASTCENC_SUCCESS);
+		std::function<void(const astcenc_error&, size_t)> executor = 
+			[this, &encoder_image, &swizzle, &data, &data_size, &status](const astcenc_error&, size_t n)
+			{
+				status[n] = astcenc_compress_image(m_context, &encoder_image, &swizzle, data, data_size, n);
+			};
+
+		if (m_threads_count > 1)
 		{
-			Memory::free(data);
-			throw Exception("Failed to ASTC compress data with code %d", (int)status);
+			wk::parallel::enumerate(status.begin(), status.end(), executor);
+			
+		}
+		else
+		{
+			executor(status[0], 0);
+		}
+
+		for (auto& thread_status : status)
+		{
+			check_status(thread_status);
 		}
 
 		output.write(data, data_size);
