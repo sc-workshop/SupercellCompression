@@ -7,29 +7,14 @@ cmake_minimum_required(VERSION 3.22)
 include(FetchContent)
 
 # install lzham
+FetchContent_Declare(
+    lzham_codec
+    GIT_REPOSITORY https://github.com/richgel999/lzham_codec.git
+    GIT_TAG d379b1f9121e2197881c61cfc4713c78848bdfe7
+    SOURCE_SUBDIR NONE
+)
 
-
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.28.0") 
-    FetchContent_Declare(
-        lzham_codec
-        GIT_REPOSITORY https://github.com/richgel999/lzham_codec.git
-        GIT_TAG d379b1f9121e2197881c61cfc4713c78848bdfe7
-        EXCLUDE_FROM_ALL
-    )
-    FetchContent_MakeAvailable(lzham_codec)
-
-else()
-    FetchContent_Declare(
-        lzham_codec
-        GIT_REPOSITORY https://github.com/richgel999/lzham_codec.git
-        GIT_TAG d379b1f9121e2197881c61cfc4713c78848bdfe7
-    )
-
-    # Just download repo. No need to call CMakeLists inside it.
-    if(NOT lzham_codec_POPULATED)
-        FetchContent_Populate(lzham_codec)
-    endif()
-endif()
+FetchContent_MakeAvailable(lzham_codec)
 
 # lzham sources
 set(LZHAM_DEC_SOURCE_DIR ${lzham_codec_SOURCE_DIR}/lzhamdecomp)
