@@ -62,7 +62,7 @@ namespace sc
 
 		std::uint8_t* image_buffer = (std::uint8_t*)input.data() + input.position();
 
-		astcenc_image encoder_image = { 0 };
+		astcenc_image encoder_image{};
 		encoder_image.dim_x = width;
 		encoder_image.dim_y = height;
 		encoder_image.dim_z = 1;

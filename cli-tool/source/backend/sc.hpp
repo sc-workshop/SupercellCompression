@@ -9,6 +9,8 @@ namespace sc
 		class ScCommandLineInterface : public CommandLineInterface
 		{
 		public:
+			virtual ~ScCommandLineInterface() = default;
+
 			bool save_metadata = false;
 			std::vector<std::string> metadata_paths;
 

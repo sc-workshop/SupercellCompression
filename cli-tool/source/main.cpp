@@ -167,10 +167,6 @@ void supercell_compression_cli(ArgumentParser& parser)
 			std::cout << "Reason: " << exception.what() << std::endl;
 		}
 	}
-
-	for (std::string& path_string : input_paths)
-	{
-	}
 }
 
 int main(int argc, const char** argv)
@@ -209,7 +205,7 @@ int main(int argc, const char** argv)
 		parser.parse_args(argc, argv);
 	}
 	catch (const std::exception& err) {
-		parser.print_help();
+		std::cout << parser << std::endl;
 
 		std::cout << "Error! " << err.what() << std::endl;
 		return 1;
@@ -217,7 +213,7 @@ int main(int argc, const char** argv)
 
 	if (parser["--help"] == true || argc == 1)
 	{
-		parser.print_help();
+		std::cout << parser << std::endl;
 		return 0;
 	}
 

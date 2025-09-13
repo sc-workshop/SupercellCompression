@@ -99,8 +99,8 @@ endif()
 # compile options
 target_compile_options(${LZHAM_TARGET} PRIVATE
     $<${WK_GNU}: -Wall -Wextra -fno-strict-aliasing -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64>
-    $<$<AND:${WK_GNU},${WK_DEBUG}>: -g>
-    $<$<AND:${WK_GNU},${WK_RELEASE}>: -O3 -fomit-frame-pointer -fexpensive-optimizations>
+    $<$<AND:$<OR:${WK_GNU},${WK_CLANG}>,${WK_DEBUG}>: -g>
+    $<$<AND:$<OR:${WK_GNU},${WK_CLANG}>,${WK_RELEASE}>: -O3 -fomit-frame-pointer -fexpensive-optimizations>
 
     $<$<AND:${WK_MSVC},${WK_DEBUG}>: /RTC1>
     $<$<AND:${WK_MSVC},${WK_RELEASE}>: /GS- /Gy /fp:fast /W4 /Ox /Ob2 /Oi /Ot /Oy>

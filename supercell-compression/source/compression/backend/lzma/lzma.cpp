@@ -22,5 +22,5 @@ namespace sc
 		}
 	}
 
-	const void* LzmaAlloc[] = { (void*)&lzma::lzma_alloc, (void*)&lzma::lzma_free };
+	const void* LzmaAlloc[2] = { reinterpret_cast<void*>(&lzma::lzma_alloc), reinterpret_cast<void*>(&lzma::lzma_free)};
 }

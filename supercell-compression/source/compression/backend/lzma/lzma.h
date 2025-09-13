@@ -27,5 +27,5 @@ namespace sc
 		};
 	}
 
-	const void* LzmaAlloc[];
+	extern const void* LzmaAlloc[2];
 }
