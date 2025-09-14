@@ -4,7 +4,7 @@ set(ASTC_VERSION 5.3.0)
 message(STATUS "ASTC VERSION: ${ASTC_VERSION}")
 
 # astc options
-if (MSVC)
+if (MSVC OR UNIX AND NOT APPLE)
     if ("${WK_PREFERRED_CPU_FEATURES}" STREQUAL "AVX2")
         set(ASTC_PREFIX "avx2")
         set(ASTCENC_ISA_AVX2 ON)
