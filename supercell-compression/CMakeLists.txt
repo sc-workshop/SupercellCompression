@@ -1,5 +1,6 @@
 # Project: supercell-compression
 
+# TODO(pavidloq): make public and private sources
 # C++ headers and source files
 file(GLOB_RECURSE HEADERS source/*.h)
 file(GLOB_RECURSE SOURCES source/*.cpp)
@@ -11,14 +12,12 @@ if(WK_BUILD_SHARED)
 
     add_library(${TARGET} SHARED)
     add_library(supercell::compression ALIAS ${TARGET})
-
 else()
     # static library
     set(TARGET supercell-compression-static)
 
     add_library(${TARGET} STATIC)
     add_library(supercell::compression ALIAS ${TARGET})
-
 endif()
 
 # add *.h and *.cpp files
@@ -34,7 +33,7 @@ target_link_libraries(
 )
 
 set_target_properties(${TARGET} PROPERTIES
-    FOLDER SupercellSDK/core
+    FOLDER supercell-sdk/core
 )
 
 # setup project
