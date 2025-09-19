@@ -34,3 +34,8 @@ FetchContent_Declare(
     GIT_TAG 4.7.0
 )
 FetchContent_MakeAvailable(astcenc)
+
+# move into dependencies folder
+set_target_properties("astcenc-${ASTC_PREFIX}-static" PROPERTIES
+    FOLDER supercell-sdk/dependencies
+)

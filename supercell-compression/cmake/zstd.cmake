@@ -1,6 +1,5 @@
 # zstd
 
-
 # zstandard options
 set(ZSTD_BUILD_STATIC ON)
 set(ZSTD_BUILD_SHARED OFF)
@@ -19,3 +18,16 @@ FetchContent_Declare(
 
 # populate zstd
 FetchContent_MakeAvailable(zstd)
+
+# move into dependencies folder
+set_target_properties(libzstd_static PROPERTIES
+    FOLDER supercell-sdk/dependencies
+)
+
+set_target_properties(clean-all PROPERTIES
+    FOLDER supercell-sdk/dependencies
+)
+
+set_target_properties(uninstall PROPERTIES
+    FOLDER supercell-sdk/dependencies
+)

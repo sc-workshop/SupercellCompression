@@ -108,4 +108,9 @@ target_compile_options(${LZHAM_TARGET} PRIVATE
     $<$<AND:${WK_MSVC},${WK_RELEASE}>: /GS- /Gy /fp:fast /W4 /Ox /Ob2 /Oi /Ot /Oy>
 )
 
+# move into dependencies folder
+set_target_properties(${LZHAM_TARGET} PROPERTIES
+    FOLDER supercell-sdk/dependencies
+)
+
 # TODO(Daniil-SV): Make .patch for LZHAM to make it work on MacOS
