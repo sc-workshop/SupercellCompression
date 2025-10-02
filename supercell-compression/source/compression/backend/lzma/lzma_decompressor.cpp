@@ -11,6 +11,17 @@ namespace sc
 {
 	struct LzmaDecompressContext : public CLzmaDec {};
 
+	bool LzmaDecompressor::ValidStream(wk::Stream& input)
+	{
+		uint8_t header[lzma::PROPS_SIZE];
+		input.read(&header, lzma::PROPS_SIZE);
+		input.seek(input.position() - lzma::PROPS_SIZE);
+
+		CLzmaProps props{};
+		auto result = LzmaProps_Decode(&props, header, lzma::PROPS_SIZE);
+		return result == SZ_OK;
+	}
+
 	LzmaDecompressor::LzmaDecompressor(uint8_t header[lzma::PROPS_SIZE], const uint64_t unpackedSize) : m_unpacked_size(unpackedSize)
 	{
 		m_context = new LzmaDecompressContext();

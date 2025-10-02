@@ -13,6 +13,7 @@ namespace sc
 	class LzmaDecompressor : DecompressorInterface
 	{
 	public:
+		static bool ValidStream(wk::Stream& input);
 		LzmaDecompressor(std::uint8_t header[lzma::PROPS_SIZE], const uint64_t unpacked_size);
 		~LzmaDecompressor();
 

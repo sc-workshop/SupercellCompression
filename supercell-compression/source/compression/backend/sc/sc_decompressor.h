@@ -16,6 +16,10 @@ namespace sc
 		{
 			struct WORKSHOP_API Decompressor
 			{
+			private:
+				static void ReadLzmaCompressedData(wk::Stream& input, wk::Stream& output);
+
+			public:
 				static std::optional<flexbuffers::Reference> decompress(wk::Stream& input, wk::Stream& output);
 			};
 		}
