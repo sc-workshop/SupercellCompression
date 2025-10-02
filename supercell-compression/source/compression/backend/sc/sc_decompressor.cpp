@@ -91,7 +91,7 @@ namespace sc
 					}
 					else
 					{
-						input.seek(input.position() - sizeof(uint32_t), Stream::SeekMode::Add);
+						input.seek(input.position() - sizeof(uint32_t));
 						ReadLzmaCompressedData(input, output);
 					}
 				}
