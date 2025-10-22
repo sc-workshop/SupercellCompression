@@ -31,7 +31,7 @@ set(ASTCENC_CLI OFF)
 FetchContent_Declare(
     astcenc
     GIT_REPOSITORY https://github.com/ARM-software/astc-encoder
-    GIT_TAG 4.7.0
+    GIT_TAG ${ASTC_VERSION}
 )
 FetchContent_MakeAvailable(astcenc)
 
