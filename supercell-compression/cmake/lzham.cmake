@@ -102,7 +102,7 @@ target_precompile_headers(${LZHAM_TARGET} PUBLIC <cstdint>)
 target_compile_options(${LZHAM_TARGET} PRIVATE
     $<$<OR:${WK_GNU},${WK_CLANG}>: -Wall -Wextra -fno-strict-aliasing -D_LARGEFILE64_SOURCE=1 -D_FILE_OFFSET_BITS=64>
     $<$<AND:$<OR:${WK_GNU},${WK_CLANG}>,${WK_DEBUG}>: -g>
-    $<$<AND:$<OR:${WK_GNU},${WK_CLANG}>,${WK_RELEASE}>: -O3 -fomit-frame-pointer -fexpensive-optimizations -Wenum-compare-switch>
+    $<$<AND:$<OR:${WK_GNU},${WK_CLANG}>,${WK_RELEASE}>: -O3 -fomit-frame-pointer -fexpensive-optimizations -Wenum-compare>
 
     $<$<AND:${WK_MSVC},${WK_DEBUG}>: /RTC1>
     $<$<AND:${WK_MSVC},${WK_RELEASE}>: /GS- /Gy /fp:fast /W4 /Ox /Ob2 /Oi /Ot /Oy>
