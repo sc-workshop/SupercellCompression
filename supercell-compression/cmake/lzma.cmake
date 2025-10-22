@@ -38,7 +38,7 @@ target_compile_definitions(${LZMA_TARGET} PRIVATE
 
 target_compile_options(${LZMA_TARGET} PRIVATE
     $<$<AND:${WK_MSVC},${WK_RELEASE}>: /Ox /GF /Gy /GS- /Ob2 /Oi /Ot>
-    $<$<AND:${WK_GNU},${WK_RELEASE}>: -c -O2 -Wall>
+    $<$<AND:$<OR:${WK_GNU},${WK_CLANG}>,${WK_RELEASE}>: -c -O2 -Wall>
 )
 
 # move into dependencies folder
