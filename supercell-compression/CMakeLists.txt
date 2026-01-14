@@ -29,7 +29,7 @@ target_include_directories(${TARGET} PUBLIC source)
 # link wk::core library
 target_link_libraries(
     ${TARGET} PUBLIC 
-    wk::core flatbuffers
+    wk::core
 )
 
 set_target_properties(${TARGET} PROPERTIES
