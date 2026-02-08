@@ -91,7 +91,7 @@ namespace sc
 		std::function<void(const astcenc_error&, size_t)> executor = 
 			[this, &encoder_image, &swizzle, &data, &data_size, &status](const astcenc_error&, size_t n)
 			{
-				status[n] = astcenc_compress_image(m_context, &encoder_image, &swizzle, data, data_size, n);
+				status[n] = astcenc_compress_image(m_context, &encoder_image, &swizzle, data, data_size, (unsigned int)n);
 			};
 
 		if (m_threads_count > 1)

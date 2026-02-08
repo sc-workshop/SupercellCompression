@@ -47,6 +47,15 @@ include(cmake/astc.cmake)
 
 target_include_directories(${TARGET} PRIVATE ${lzma-sdk_SOURCE_DIR}/C ${lzham_codec_SOURCE_DIR}/include ${zstd_SOURCE_DIR}/lib ${astcenc_SOURCE_DIR}/Source)
 
-target_link_libraries(${TARGET} PRIVATE lzma-lib lzham-lib zstd::libzstd astcenc-${ASTC_PREFIX}-static)
+target_link_libraries(${TARGET} PRIVATE lzma-lib lzham-lib zstd::libzstd astc::astcenc)
+
+if (APPLE)
+    # Build shared lib on Apple platforms
+    add_dependencies(${TARGET}
+        astcenc-shared
+    )
+
+    target_compile_definitions(${TARGET} PRIVATE ASTCENC_DYNAMIC_LIBRARY)
+endif()
 
 wk_include_flatbuffers()

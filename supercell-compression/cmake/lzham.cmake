@@ -9,8 +9,8 @@ include(FetchContent)
 # install lzham
 FetchContent_Declare(
     lzham_codec
-    GIT_REPOSITORY https://github.com/richgel999/lzham_codec.git
-    GIT_TAG d379b1f9121e2197881c61cfc4713c78848bdfe7
+    GIT_REPOSITORY https://github.com/sc-workshop/lzham_codec
+    GIT_TAG master
     SOURCE_SUBDIR NONE
 )
 
@@ -112,5 +112,3 @@ target_compile_options(${LZHAM_TARGET} PRIVATE
 set_target_properties(${LZHAM_TARGET} PROPERTIES
     FOLDER supercell-sdk/dependencies
 )
-
-# TODO(Daniil-SV): Make .patch for LZHAM to make it work on MacOS
