@@ -1,6 +1,17 @@
-# zstd
+####################################################
+# Zstandart
+####################################################
+include(FetchContent)
 
-# zstandard options
+if (TARGET zstd::libzstd)
+    message(STATUS "(${PROJECT_NAME}): Using configured zstd target")
+    return()
+endif()
+
+set(ZSTD_VERSION 1.5.7)
+
+# Options
+# Build static by default
 if(NOT DEFINED ZSTD_BUILD_SHARED)
 	set(ZSTD_BUILD_STATIC ON)
 	set(ZSTD_BUILD_SHARED OFF)
@@ -11,18 +22,61 @@ set(ZSTD_BUILD_DEPRECATED OFF)
 set(ZSTD_BUILD_PROGRAMS OFF)
 set(ZSTD_BUILD_TESTS OFF)
 set(ZSTD_BUILD_CONTRIB OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# download zstd module
-FetchContent_Declare(
-    zstd
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    SOURCE_SUBDIR build/cmake
-    URL "https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz"
-	FIND_PACKAGE_ARGS
-)
+# On most platforms, static libraries require compilation with -fPIC for shared builds, but zstd is usually supplied without it.
+# So we need to build it manually in such cases
+# On Windows, this behavior is simplified, so we can try to use system installed library (shared/static) without any fear.
+# Or if this is a static library build or was requested to use shared zstd, we can also search for already installed files.
+# Also, Homebrew downloads only host arch package, so for successful Universal builds we need to build zstd manually
+if((NOT BUILD_SHARED_LIBS OR CMAKE_SYSTEM_NAME STREQUAL "Windows" OR ZSTD_BUILD_SHARED) AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    find_package(zstd CONFIG)
+endif()
 
-# populate zstd
-FetchContent_MakeAvailable(zstd)
+if (zstd_FOUND)
+    message(STATUS "Using system ZSTD ${zstd_VERSION}")
+else()
+    message(STATUS "ZSTD VERSION: ${ZSTD_VERSION}")
+
+    # Declare package
+    FetchContent_Declare(
+        zstd
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+        SOURCE_SUBDIR build/cmake
+        URL "https://github.com/facebook/zstd/releases/download/v${ZSTD_VERSION}/zstd-${ZSTD_VERSION}.tar.gz"
+    )
+
+    # Populate zstd
+    FetchContent_MakeAvailable(zstd)
+endif()
+
+if (NOT TARGET zstd::libzstd)
+    # Normalize different zstd target names to one common alias
+    set(ZSTD_LOOKUP_NAMES
+        ZSTD::ZSTD
+    )
+
+    if (${ZSTD_BUILD_SHARED})
+        list(APPEND ZSTD_LOOKUP_NAMES
+            zstd::libzstd_shared
+            libzstd_shared
+        )
+    endif()
+
+    if (${ZSTD_BUILD_STATIC})
+        list(APPEND ZSTD_LOOKUP_NAMES
+            zstd::libzstd_static
+            libzstd_static
+        )
+    endif()
+
+    foreach(LOOKUP_NAME IN LISTS ZSTD_LOOKUP_NAMES)
+        if (TARGET ${LOOKUP_NAME})
+            add_library(zstd::libzstd ALIAS ${LOOKUP_NAME})
+            break()
+        endif()
+    endforeach()
+endif()
 
 # move into dependencies folder
 if (TARGET libzstd_static)
@@ -37,6 +91,4 @@ if (TARGET libzstd_static)
 	set_target_properties(uninstall PROPERTIES
 		FOLDER supercell-sdk/dependencies
 	)
-
-	add_library(zstd::libzstd ALIAS libzstd_static)
 endif()

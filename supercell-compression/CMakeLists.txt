@@ -50,12 +50,10 @@ target_include_directories(${TARGET} PRIVATE ${lzma-sdk_SOURCE_DIR}/C ${lzham_co
 target_link_libraries(${TARGET} PRIVATE lzma-lib lzham-lib zstd::libzstd astc::astcenc)
 
 if (APPLE)
-    # Build shared lib on Apple platforms
+    # Add dependency to custom target which should build universal binary for us
     add_dependencies(${TARGET}
-        astcenc-shared
+        astcenc
     )
-
-    target_compile_definitions(${TARGET} PRIVATE ASTCENC_DYNAMIC_LIBRARY)
 endif()
 
 wk_include_flatbuffers()

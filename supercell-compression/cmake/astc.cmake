@@ -29,8 +29,19 @@ if(MSVC OR UNIX AND NOT APPLE)
     )
 elseif(APPLE)
     # On Apple platforms, we build a universal binary for both x86_64 and arm64
-    # And to make things simpler, build shared library
-    set(ASTCENC_SHAREDLIB ON)
+    add_custom_target(
+        astcenc
+            ALL
+            COMMAND
+                lipo -create -output $<TARGET_FILE_DIR:astcenc-sse4.1-static>/libastcenc-static.a -arch x86_64 $<TARGET_FILE:astcenc-sse4.1-static> -arch x86_64h $<TARGET_FILE:astcenc-avx2-static> -arch arm64 $<TARGET_FILE:astcenc-neon-static>
+            VERBATIM
+    )
+
+    add_dependencies(astcenc
+        astcenc-sse4.1-static
+        astcenc-avx2-static
+        astcenc-neon-static
+    )
 else()
     # Native build for other platforms
     set(ASTC_PREFIX "native")
@@ -48,12 +59,19 @@ FetchContent_MakeAvailable(astcenc)
 if (NOT ${ASTC_PREFIX} STREQUAL "")
     add_library(astc::astcenc ALIAS astcenc-${ASTC_PREFIX}-static)
 elseif(APPLE)
-    add_library(astc::astcenc SHARED IMPORTED GLOBAL)
+    add_library(astc::astcenc STATIC IMPORTED GLOBAL)
+
     set_target_properties(astc::astcenc PROPERTIES
-        IMPORTED_LOCATION_DEBUG          "${astcenc_BINARY_DIR}/Source/Debug/libastcenc-shared.dylib"
-        IMPORTED_LOCATION_RELEASE        "${astcenc_BINARY_DIR}/Source/Release/libastcenc-shared.dylib"
-        IMPORTED_LOCATION_RELWITHDEBINFO "${astcenc_BINARY_DIR}/Source/RelWithDebInfo/libastcenc-shared.dylib"
-        IMPORTED_LOCATION_MINSIZEREL     "${astcenc_BINARY_DIR}/Source/MinSizeRel/libastcenc-shared.dylib"
+        IMPORTED_LOCATION_DEBUG
+            "${astcenc_BINARY_DIR}/Source/Debug/libastcenc-static.a"
+        IMPORTED_LOCATION_RELEASE
+            "${astcenc_BINARY_DIR}/Source/Release/libastcenc-static.a"
+        IMPORTED_LOCATION_RELWITHDEBINFO
+            "${astcenc_BINARY_DIR}/Source/RelWithDebInfo/libastcenc-static.a"
+        IMPORTED_LOCATION_MINSIZEREL
+            "${astcenc_BINARY_DIR}/Source/MinSizeRel/libastcenc-static.a"
+
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
     )
 else()
     add_library(astc::astcenc ALIAS astcenc-native-static)
