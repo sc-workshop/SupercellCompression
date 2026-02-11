@@ -28,8 +28,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # So we need to build it manually in such cases
 # On Windows, this behavior is simplified, so we can try to use system installed library (shared/static) without any fear.
 # Or if this is a static library build or was requested to use shared zstd, we can also search for already installed files.
-# Also, Homebrew downloads only host arch package, so for successful Universal builds we need to build zstd manually
-if((NOT BUILD_SHARED_LIBS OR CMAKE_SYSTEM_NAME STREQUAL "Windows" OR ZSTD_BUILD_SHARED) AND NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+if(NOT BUILD_SHARED_LIBS OR CMAKE_SYSTEM_NAME STREQUAL "Windows" OR ZSTD_BUILD_SHARED)
     find_package(zstd CONFIG)
 endif()
 
