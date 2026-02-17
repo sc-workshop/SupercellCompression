@@ -56,6 +56,14 @@ elseif(APPLE)
 
     set_target_properties(astc::astcenc PROPERTIES
         IMPORTED_LOCATION "${astcenc_BINARY_DIR}/Source/$<CONFIG>/libastcenc-static.a"
+        IMPORTED_LOCATION_DEBUG
+            "${astcenc_BINARY_DIR}/Source/Debug/libastcenc-static.a"
+        IMPORTED_LOCATION_RELEASE
+            "${astcenc_BINARY_DIR}/Source/Release/libastcenc-static.a"
+        IMPORTED_LOCATION_RELWITHDEBINFO
+            "${astcenc_BINARY_DIR}/Source/RelWithDebInfo/libastcenc-static.a"
+        IMPORTED_LOCATION_MINSIZEREL
+            "${astcenc_BINARY_DIR}/Source/MinSizeRel/libastcenc-static.a"
         IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
     )
 
