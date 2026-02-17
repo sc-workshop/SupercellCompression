@@ -22,11 +22,6 @@ if(MSVC OR UNIX AND NOT APPLE)
     elseif("${WK_PREFERRED_CPU_FEATURES}" STREQUAL "Default")
         set(ASTC_PREFIX "native")
     endif()
-
-    # move into dependencies folder
-    set_target_properties("astcenc-${ASTC_PREFIX}-static" PROPERTIES
-        FOLDER supercell-sdk/dependencies
-    )
 elseif(APPLE)
     # On Apple platforms, we build a universal binary for both x86_64 and arm64
     add_custom_target(
