@@ -8,7 +8,26 @@ set(ASTCENC_CLI OFF)
 set(ASTC_PREFIX "")
 
 # ASTC options
-if(MSVC OR UNIX AND NOT APPLE)
+if(ANDROID)
+	set(ASTCENC_ISA_AVX2 OFF)
+	set(ASTCENC_ISA_SSE41 OFF)
+	set(ASTCENC_ISA_SSE2 OFF)
+	set(ASTCENC_ISA_NATIVE OFF)
+	set(ASTCENC_ISA_NONE ON)
+	
+	if (NOT ANDROID_ABI STREQUAL "x86")
+		set(ASTCENC_X86_GATHERS OFF)
+	endif()
+
+	if (ANDROID_ABI STREQUAL "armeabi-v7a with NEON")
+		set(ASTCENC_ISA_NEON ON)
+		set(ASTC_PREFIX "neon")
+	else()
+		set(ASTC_PREFIX "none")
+	endif()
+elseif(WK_MSVC OR WK_MSVC_CL AND NOT APPLE)
+	message(STATUS "Building windows ASTC")
+	
     # Trying to setup CPU instrincts based on current env on Windows
     if("${WK_PREFERRED_CPU_FEATURES}" STREQUAL "AVX2")
         set(ASTC_PREFIX "avx2")
@@ -37,15 +56,16 @@ elseif(APPLE)
     )
 else()
     # Native build for other platforms
+	set(ASTCENC_ISA_NATIVE ON)
+
     set(ASTC_PREFIX "native")
-    set(ASTCENC_ISA_NATIVE ON)
 endif()
 
 # download astc module
 FetchContent_Declare(
     astcenc
     GIT_REPOSITORY https://github.com/ARM-software/astc-encoder
-    GIT_TAG 5.3.0
+    GIT_TAG ${ASTC_VERSION}
 )
 FetchContent_MakeAvailable(astcenc)
 
