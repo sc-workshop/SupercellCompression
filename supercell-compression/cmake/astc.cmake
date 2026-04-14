@@ -25,7 +25,7 @@ if(ANDROID)
 	else()
 		set(ASTC_PREFIX "none")
 	endif()
-elseif(WK_MSVC OR WK_MSVC_CL AND NOT APPLE)
+elseif(WK_MSVC OR WK_MSVC_CL OR UNIX AND NOT APPLE)
 	message(STATUS "Building windows ASTC")
 	
     # Trying to setup CPU instrincts based on current env on Windows
