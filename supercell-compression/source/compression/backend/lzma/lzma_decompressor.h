@@ -10,7 +10,7 @@ namespace sc
 	// forward declare
 	struct WORKSHOP_API LzmaDecompressContext;
 
-	class LzmaDecompressor : DecompressorInterface
+	class LzmaDecompressor : public DecompressorInterface
 	{
 	public:
 		static bool ValidStream(wk::Stream& input);

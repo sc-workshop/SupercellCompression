@@ -9,7 +9,7 @@
 
 namespace sc
 {
-	class WORKSHOP_API LzmaCompressor : CompressorInterface
+	class WORKSHOP_API LzmaCompressor : public CompressorInterface
 	{
 	public:
 		struct Props
