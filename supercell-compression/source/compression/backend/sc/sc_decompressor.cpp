@@ -97,7 +97,7 @@ namespace sc
 				}
 				else if (version == 2) // Version 2 is uncompressed data // DaniilSV: are you sure?
 				{
-					output.write(input.data(), input.length() - input.position());
+					output.write(reinterpret_cast<uint8_t*>(input.data()) + input.position(), input.length() - input.position());
 				}
 
 				return result;
